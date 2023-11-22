@@ -1,0 +1,9 @@
+altair
+numpy
+pandas
+pydeck
+streamlit
+streamlit-authenticator
+streamlit-modal
+psycopg2
+SQLAlchemy

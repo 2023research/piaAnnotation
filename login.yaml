@@ -1,0 +1,33 @@
+credentials:
+  usernames:
+    john:
+      email: jsmith@gmail.com
+      name: john
+      password: $2b$12$Ah0PkNoUWA5fbjRsTa8fxO4tqNyl.Of6jY4rBIjcwKBkGo6MpfxH2 # Placeholder for hashed password of 'abc'
+    james:
+      email: rbriggs@gmail.com
+      name: james
+      password: $2b$12$Ypwx7V3nN5GOekB2aPu4.OK7G5k1ipN9IcJ6qhL.39neMQISnwx12
+    oliver:
+      email: rbriggs@gmail.com
+      name: oliver
+      password: $2b$12$KewxCDJ4ULRViJM0cdW6Zu8DOixgOlqx8sr.pLvzpkEG.6dDr5z/S
+    david:
+      email: rbriggs@gmail.com
+      name: david
+      password: $2b$12$uOPJt3ixEn1PBhprZK9D0un3r2nvwKykUhL4UE8IQfGUt9e/ZrXsu
+    emma:
+      email: rbriggs@gmail.com
+      name: emma
+      password: $2b$12$pljOwNCFTEYyY1ZdRE9RPO1fD41fyDiMLj7cBgIL2mvNzz9RpKyT6
+    alex:
+      email: rbriggs@gmail.com
+      name: alex
+      password: $2b$12$JHAZepA1yh53O4Oob8b1.e67MpP5iFNWQhCYJDkMPUjydRCGYRzce
+cookie:
+  expiry_days: 30
+  key: some_signature_key # Must be string
+  name: some_cookie_name
+preauthorized:
+  emails:
+  - melsby@gmail.com
