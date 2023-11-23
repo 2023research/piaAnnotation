@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from urllib.error import URLError
-import os, psycopg2
+import os, psycopg2, time
 import pandas as pd
 import streamlit as st
 import streamlit_authenticator as stauth
@@ -23,17 +23,24 @@ from streamlit.logger import get_logger
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
+from utils import *
+
 
 import yaml
 from yaml.loader import SafeLoader
 
-#############################################################################################
-LOGGER = get_logger(__name__)
+print ('-------------------------------------------new run-------------------------------------------------')
+#######basic setting######################################################################################
+# LOGGER = get_logger(__name__)
 path_results = './results'
-
 st.set_page_config(layout="wide")
-#############################################################################################
-# database
+####### initialize global session state
+if "issue_list" not in st.session_state:
+    st.session_state.issue_list = []
+    st.session_state.deletes = []
+    st.session_state.newopt_non = []
+    st.session_state.bool_save_newopt=False
+####### database ############
 @st.cache_resource
 def sqlalchemy_engine():
     engine = create_engine('postgresql://postgres:UTS-DSI2020@piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com/pia')
@@ -42,32 +49,17 @@ def sqlalchemy_engine():
 def connect_db():
     conn = psycopg2.connect("dbname=pia host=piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com user=postgres password=UTS-DSI2020")
     return conn
-# create schema####
-def create_grant_schema(schema):
-    cur = connect_db().cursor()
-    print (cur)
-    cur.execute(f"CREATE SCHEMA IF NOT EXISTS {schema} AUTHORIZATION postgres ")
-    cur.execute(f"GRANT CREATE, USAGE ON SCHEMA {schema} TO postgres")
-    cur.execute(f"GRANT SELECT ON ALL TABLES IN SCHEMA {schema} TO postgres")
-    cur.execute(f"GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA {schema} TO postgres")
-    cur.execute("COMMIT")
-# create_grant_schema('email')
-## create table###############
-def create_table_issue():
-    sql = """CREATE TABLE IF NOT EXISTS email.issues (
-        area varchar(150),
-        location varchar(150),
-        issue varchar(150),
-        maintype varchar(150),
-        subtype varchar(150),
-        subsubtype varchar(150),
-        subsubsubtype varchar(150),
-        note varchar(1500)
-        )"""
-    cur = connect_db().cursor()
-    cur.execute(sql)
-    cur.execute("COMMIT")
-# create_table_issue()
+###### style setting ##########
+st.markdown(
+    """
+    <style>
+        section[data-testid="stSidebar"] {
+            width: 800px !important; # Set the width to your desired value
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+    )
 ########################################################################################################
 # body
 location_issue={
@@ -121,8 +113,6 @@ def read_email(sample=False):
             % e.reason
         )
 
-# def run():
-
 ############################################################################################
 #authorization
 # usernames = ['john','james','oliver','david','emma','alex']
@@ -142,38 +132,24 @@ authenticator = stauth.Authenticate(
     config['cookie']['expiry_days'],
     config['preauthorized']
 )
-name, authenticator_status, username = authenticator.login('Login','main')
+showingname, authenticator_status, username = authenticator.login('Login','main')
 if authenticator_status==False:
     st.error('username/password is incorrect')
 elif authenticator_status==None:
     st.warning("please enter your username and password")
-else:  
-    # st.set_page_config(
-    #     page_title="Hello",
-    #     page_icon="👋",
-    # )   
-   
-    st.markdown(f"<h2 style='text-align: center; color: red;'>Welcome {name}!</h2>", unsafe_allow_html=True)
+else: 
+    st.markdown(f"<h2 style='text-align: center; color: red;'>Welcome {username}!</h2>", unsafe_allow_html=True)
     authenticator.logout('Logout')
     # col1, col2,col3 = st.columns([0.1,0.5,0.15])
     # with col2:
-    #     # st.markdown(f'''Welcome :green[{name}]!''') #mlit] :orange[can] :green[write] :blue[text] :violet[in]
-    #     st.subheader(f'Welcome {name}!')
+    #     # st.markdown(f'''Welcome :green[{username}]!''') #mlit] :orange[can] :green[write] :blue[text] :violet[in]
+    #     st.subheader(f'Welcome {username}!')
     # with col1:
     # with col1:
-    #     st.subheader(f'Wecome {name}')
+    #     st.subheader(f'Wecome {username}')
     # st.sidebar.divider()
 #########body######################################################################################
-    st.markdown(
-    """
-    <style>
-        section[data-testid="stSidebar"] {
-            width: 800px !important; # Set the width to your desired value
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
-    )
+    
 
 
 #####  load email #########################
@@ -200,11 +176,10 @@ else:
             st.session_state.key_maintype = 'unclear'
             st.session_state.key_subtype = None   
             st.session_state.key_area_new=None
-
-    if "issue_list" not in st.session_state:
-        st.session_state.issue_list = []
-        st.session_state.deletes = []
-    
+            st.session_state.key_location_new=None
+            st.session_state.key_issue_new=None
+            st.session_state.key_maintype_new=None
+            st.session_state.key_subtype_new=None
     
     # st.sidebar.divider()
     is_maintenance = st.sidebar.selectbox( "Is it related to the property maintenance?", ("no","yes"), 
@@ -220,7 +195,8 @@ else:
             disable_newopt = (item!="add a new option") or (disable)
             new_option = st.text_input(label="Input your new option",label_visibility='visible', placeholder='Input your new option',
                                         disabled = disable_newopt,key=key[1])  
-            item = new_option if item=="add a new option" else item 
+            if item=="add a new option":
+                item = new_option if new_option!=None else 'unclear'       
         return item 
     
     area = select_issues("which room or area has issue?",['unclear',"bedroom", "living room"],disable=disable,key=['key_area','key_area_new'])
@@ -241,9 +217,9 @@ else:
             if len(ele)>20:
                 opt_long_checklist.append(ele)
         if i<len(issue_str_list)-1:
-            issue_str=issue_str+ele+'/' if ele !=None else issue_str+'None/'
-        else:
-            issue_str=issue_str+ele if ele !=None else issue_str+'None'
+            issue_str=issue_str+ele+'/'# if ele !=None else issue_str+'None/'
+        elif ele !=None:
+            issue_str=issue_str+ele # if ele !=None else issue_str+'None'
     print (issue_str)
 
     ### add issue button ##########
@@ -260,32 +236,23 @@ else:
         add_new_options_res = st.button("➕ Add new option", disabled=bool_addopt, key='add_new_options')
    
     ### modal popup moduel########################################################################################
-    # # dbname=pia host=piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com user=postgres password=UTS-DSI2020   
-    #postgresql+psycopg2://user:password@hostname/database_name'
     
-    # print (pd.read_sql('select * from email.issues', con=sqlalchemy_engine()))
+    # start_time = time.time()
+    # print (pd.read_sql('select issuestr from email.issues', con=sqlalchemy_engine()))
+    # print("--- %s pd seconds ---" % (time.time() - start_time))
+
+    # start_time = time.time()
+    # cur = connect_db().cursor()
+    # cur.execute('select issuestr from email.issues')
+    # df = pd.DataFrame(cur.fetchall())
+    # df.columns = [ x.name for x in cur.description ]
+    # print(df)
+
+    # print("--- %s cur seconds ---" % (time.time() - start_time))
     def modal_save_newopt_confirm():
         st.session_state.bool_save_newopt=True
-    def modal_save_newopt(a=None):  
-        sql = f"""INSERT INTO email.issues (area, location, issue, maintype, subtype, note) VALUES ('{area}','{location}','{issue}','{maintype}','{subtype}','{name}')"""
-        # st method#################################
-        # conn = st.connection("postgresql", type="sql")
-        # Perform query.
-        # conn.session.execute(text(sql))
-        print (sql)                 
-        # cur method################################
-        cur = connect_db().cursor()
-        cur.execute(sql)
-        try:
-            cur.execute(sql)
-        except:
-            cur.execute("rollback") 
-        cur.execute('commit')
-    if 'bool_save_newopt' not in st.session_state:
-        st.session_state.bool_save_newopt=False
-
+    
     with st.sidebar:    
-
         my_modal = Modal(title='', key='key_add_newopt_modal',padding=0,max_width=800)      
         if add_new_options_res:
             if len(opt_long_checklist) > 0:
@@ -294,18 +261,27 @@ else:
                     st.markdown(f"<h3 style='text-align: center; color: red;'>{opt_long_checklist}</h3>", unsafe_allow_html=True)
                     st.button('Back to re-edit it', key='key_add_newopt_revise')
             else:
-                with my_modal.container(): 
-                    st.markdown(f"<p style='text-align: center; '>Your new maintenance description is:</p>", unsafe_allow_html=True)
-                    st.markdown(f"<h3 style='text-align: center; color: red;'>{issue_str.split('/')[:]}</h3>", unsafe_allow_html=True)
-                    st.markdown(f"<p style='text-align: center; '>Please save or re-edit it. Note that the saving will update the options in the system!</p>", unsafe_allow_html=True)
-                    
-                    st.button('Back to re-edit it', key='key_add_newopt_revise')
-                    # st.button('Confirm to save it to system',on_click=modal_save_newopt, args=(1,), key='key_add_newopt_confirm')
-                    st.button('Confirm to save it to system',on_click=modal_save_newopt_confirm, key='key_add_newopt_confirm')
-
+                cur = connect_db().cursor()
+                cur.execute('select issuestr from email.issues')
+                issuestr_db = [i[0] for i in cur.fetchall()]
+                print (issuestr_db,issue_str)
+                if issue_str in issuestr_db:
+                    with my_modal.container(): 
+                        st.markdown(f"<p style='text-align: center; '>Your new option as below is too long, please use a short key-words.</p>", unsafe_allow_html=True)
+                        st.markdown(f"<h3 style='text-align: center; color: red;'>{opt_long_checklist}</h3>", unsafe_allow_html=True)
+                        st.button('Back to re-edit it', key='key_add_newopt_revise')
+                else:
+                    with my_modal.container(): 
+                        st.markdown(f"<p style='text-align: center; '>Your new maintenance description is:</p>", unsafe_allow_html=True)
+                        st.markdown(f"<h3 style='text-align: center; color: red;'>{issue_str.split('/')[:]}</h3>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='text-align: center; '>Please save or re-edit it. Note that the saving will update the options in the system!</p>", unsafe_allow_html=True)
+                        
+                        st.button('Back to re-edit it', key='key_add_newopt_revise')
+                        st.button('Confirm to save it to system',on_click=modal_save_newopt_confirm, key='key_add_newopt_confirm')
+    ### insert new options ########################################################################################################################
     print ('st.session_state.bool_save_newopt',st.session_state.bool_save_newopt)
     if st.session_state.bool_save_newopt:
-        sql = f"""INSERT INTO email.issues (area, location, issue, maintype, subtype, note) VALUES ('{area}','{location}','{issue}','{maintype}','{subtype}','{name}')"""
+        sql = f"""INSERT INTO email.issues (area, location, issue, maintype, subtype, issuestr, idemail, username) VALUES ('{area}','{location}','{issue}','{maintype}','{subtype}', '{issue_str}', '{id_email}', '{username}')"""
         # st method#################################
         # conn = st.connection("postgresql", type="sql")
         # Perform query.
@@ -315,9 +291,13 @@ else:
         cur = connect_db().cursor()
         cur.execute(sql)
         try:
-            cur.execute(sql)
+            st.sidebar.warning("Your new issue description is saved successfully")
+            cur.execute(sql)            
+            cur.execute('commit')
         except:
+            st.sidebar.error("Your new issue description is not saved! please report this to shuming.liang@uts.edu.au")
             cur.execute("rollback") 
+
         st.session_state.bool_save_newopt=False
 
     ########################################################################################################################################################################
@@ -340,11 +320,7 @@ else:
     
     def reset():
         st.session_state.is_maintenance = 'no'
-        st.session_state.key_area = 'unclear'
-        st.session_state.key_location = 'unclear'
-        st.session_state.key_issue = 'unclear'
-        st.session_state.key_maintype = 'unclear'    
-        st.session_state.key_subtype = None 
+        reset_no()
         st.session_state.issue_list = []
         st.session_state.deletes = []
 
