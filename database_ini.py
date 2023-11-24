@@ -52,3 +52,26 @@ def create_table_issue():
     cur.execute(sql)
     cur.execute("COMMIT")
 create_table_issue()
+
+#  # st method#################################
+# start_time = time.time()
+# conn = st.connection("postgresql", type="sql")
+# # Perform query.
+# conn.session.execute(text(sql))
+# conn.session.execute('commit')
+# print("---1 %s cur seconds ---" % (time.time() - start_time))
+# start_time = time.time()
+
+# # pandas method #################################
+# start_time = time.time()
+# print (pd.read_sql('select issuestr from email.issues', con=sqlalchemy_engine()))
+# print("--- %s pd seconds ---" % (time.time() - start_time))
+
+# #psycopg2 method #################################
+# #db data to datafram####
+# start_time = time.time()
+# cur = connect_db().cursor()
+# cur.execute('select issuestr from email.issues')
+# df = pd.DataFrame(cur.fetchall())
+# df.columns = [ x.name for x in cur.description ]
+# print(df)
