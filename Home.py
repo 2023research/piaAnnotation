@@ -137,6 +137,8 @@ else:
         cur = connect_db().cursor()
         cur.execute('select idemail from email.labels')    
         ids = [x[0] for x in cur.fetchall()]
+        if len(ids)==0:
+            ids=['temp']
         return ids
     def push_idemail_open(id_email=None,username=None):
         cur = connect_db().cursor()
@@ -148,11 +150,15 @@ else:
     def pull_idemail_open():
         cur = connect_db().cursor()
         cur.execute('select * from email.openedids') 
-        df = pd.DataFrame(cur.fetchall())
-        df.columns = [ x.name for x in cur.description ]
-        df['timeopened'] = time.time() - df['timeopened'].astype(float)
-        ids = df['idemail'][df['timeopened']<100].to_list()     
-        print (df)   
+        df = pd.DataFrame(cur.fetchall()) 
+        print ('lllllllllllllllllllll',df.shape)       
+        if df.shape[1]>0:
+            df.columns = [ x.name for x in cur.description ]
+            df['timeopened'] = time.time() - df['timeopened'].astype(float)
+            ids = df['idemail'][df['timeopened']<100].to_list()     
+            # print (df)
+        else:
+            ids = ['temp']   
         return ids
     
     def read_email(sample=False):
@@ -185,6 +191,7 @@ else:
          st.session_state.bool_read_email = False
          st.session_state.text_email, st.session_state.id_email = read_email()
          push_idemail_open(id_email=st.session_state.id_email,username=username)
+
     text_email,id_email = st.session_state.text_email, st.session_state.id_email
     print (id_email)    
     st.header(f'Text to analyze. The email id is: {id_email}', divider='red')
@@ -196,7 +203,11 @@ else:
         cur = connect_db().cursor()
         cur.execute('select * from email.issues')
         opts_df = pd.DataFrame(cur.fetchall())
-        opts_df.columns = [ x.name for x in cur.description ]
+        if opts_df.shape[0]>0:
+            opts_df.columns = [ x.name for x in cur.description ]
+        else:
+            opts_df = pd.DataFrame(['unclear','unclear','unclear','unclear','unclear','unclear'])
+            opts_df.columns = ['area','location','issue','maintype','subtype','issuestr']
         st.session_state.opts_df = opts_df
     #### pull latest options from database ####
     # start_time = time.time()
