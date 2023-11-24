@@ -155,7 +155,7 @@ else:
         if df.shape[1]>0:
             df.columns = [ x.name for x in cur.description ]
             df['timeopened'] = time.time() - df['timeopened'].astype(float)
-            ids = df['idemail'][df['timeopened']<100].to_list()     
+            ids = df['idemail'][df['timeopened']<1000].to_list()     
             # print (df)
         else:
             ids = ['temp']   
