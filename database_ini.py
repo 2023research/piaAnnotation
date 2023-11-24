@@ -51,7 +51,32 @@ def create_table_issue():
     cur = connect_db().cursor()
     cur.execute(sql)
     cur.execute("COMMIT")
-create_table_issue()
+# create_table_issue()
+
+def create_table_labels():
+    sql = """CREATE TABLE IF NOT EXISTS email.labels (
+        lable varchar(1500),
+        timesubmit varchar(1500),
+        idemail varchar(150),
+        username varchar(150),
+        note varchar(1500)
+        )"""
+    cur = connect_db().cursor()
+    cur.execute(sql)
+    cur.execute("COMMIT")
+create_table_labels()
+
+def create_table_openedids():
+    sql = """CREATE TABLE IF NOT EXISTS email.openedids (
+        timeopened varchar(1500),
+        idemail varchar(150),
+        username varchar(150),
+        note varchar(1500)
+        )"""
+    cur = connect_db().cursor()
+    cur.execute(sql)
+    cur.execute("COMMIT")
+create_table_openedids()
 
 #  # st method#################################
 # start_time = time.time()

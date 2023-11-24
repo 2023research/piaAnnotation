@@ -35,11 +35,17 @@ path_results = './results'
 st.set_page_config(layout="wide")
 ####### initialize global session state
 if "issue_list" not in st.session_state:
+    st.session_state.id_email = None
+    st.session_state.text_email = None
     st.session_state.issue_list = []
     st.session_state.deletes = []
-    st.session_state.newopt_non = []
-    st.session_state.bool_save_newopt=False
+    st.session_state.newopts = {}
+    st.session_state.bool_read_email = True
+    st.session_state.bool_save_newopt_confirm=0
     st.session_state.bool_add_newopt_button = False
+    st.session_state.bool_final_submit = False
+    st.session_state.bool_final_submit_confirm = 0
+    ##
     st.session_state.time_lastopt = time.time()
     st.session_state.opts_df = None
     ##
@@ -64,52 +70,11 @@ def connect_db():
     conn = psycopg2.connect("dbname=pia host=piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com user=postgres password=UTS-DSI2020")
     return conn
 ###### style setting ##########
-st.markdown( """ <style>section[data-testid="stSidebar"] {width: 800px !important; # Set the width to your desired value}</style> """,
-    unsafe_allow_html=True, )
+st.markdown( """<style>section[data-testid="stSidebar"] {
+            width: 800px !important; # Set the width to your desired value}</style> """, unsafe_allow_html=True, )
+st.markdown("""<style>div.stButton {text-align:center; color: blue;}</style>""", unsafe_allow_html=True)
 ########################################################################################################
-# slectbox options #####################################
-def pull_options():
-    cur = connect_db().cursor()
-    cur.execute('select * from email.issues')
-    opts_df = pd.DataFrame(cur.fetchall())
-    opts_df.columns = [ x.name for x in cur.description ]
-    st.session_state.opts_df = opts_df
-#### pull latest options from database ####
-# start_time = time.time()
-if st.session_state.opts_df is None:
-    pull_options()    
-if time.time() - st.session_state.time_lastopt >5:
-    st.session_state.time_lastopt = time.time()
-    pull_options()
-    print ('########---------------------$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$-')
-opts_df = st.session_state.opts_df
-#### area ####
-opts_area = opts_df['area']
-opts_area =opts_area.unique().tolist()
-if 'unclear' not in opts_area:
-    opts_area.append('unclear')
-#### location ####
-opts_location = opts_df.groupby('area')['location'].agg(['unique'])
-opts_location['unique'] = opts_location['unique'].apply(lambda x: x.tolist())
-opts_location = opts_location['unique'].to_dict()
-opts_location['unclear']=['unclear']
-#### issue ####
-opts_issue = opts_df.groupby('location')['issue'].agg(['unique'])
-opts_issue['unique'] = opts_issue['unique'].apply(lambda x: x.tolist())
-opts_issue = opts_issue['unique'].to_dict()
-opts_issue['unclear']=['unclear']
-#### maintype ####
-opts_maintype = opts_df.groupby('issue')['maintype'].agg(['unique'])
-opts_maintype['unique'] = opts_maintype['unique'].apply(lambda x: x.tolist())
-opts_maintype = opts_maintype['unique'].to_dict()
-opts_maintype['unclear']=['unclear']
-#### subtype ####
-opts_subtype = opts_df.groupby('maintype')['subtype'].agg(['unique'])
-opts_subtype['unique'] = opts_subtype['unique'].apply(lambda x: x.tolist())
-opts_subtype = opts_subtype['unique'].to_dict()
-opts_subtype['unclear']=['unclear']
 
-# print("---1 %s cur seconds ---" % (time.time() - start_time))
 
 ##### login #######################################################################################
 # login authorization ###########
@@ -138,45 +103,6 @@ else:
     st.markdown(f"<h2 style='text-align: center; color: red;'>Welcome {username}!</h2>", unsafe_allow_html=True)
     authenticator.logout('Logout')
 ###############################################################################################   
-##### load email #####################################################################################
-    
-    def read_email(sample=False):
-        files = [f[:-4] for f in os.listdir(path_results)] 
-        @st.cache_data
-        def get_email_data():
-            df = pd.read_csv('./data/b00.csv',sep=',')
-            print('######################')
-            return df   
-        try:
-            df = get_email_data()
-            df = df[['Body','ID']]
-            df_bool = df['ID'].apply(lambda x: x not in files)
-            df_out = df[df_bool]
-            return df_out.iloc[0]['Body'],df_out.iloc[0]['ID']
-            
-        except URLError as e:
-            st.error(
-                """
-                **The email content cannot be loaded correctly, please send this error message to email: shuming.liang@uts.edu.au**
-                Connection error: %s
-            """
-                % e.reason
-            )
-    text_email,id_email = read_email()
-    print (id_email)    
-    st.header(f'Text to analyze. The email id is: {id_email}', divider='red')
-    st.markdown(text_email)
-    st.header(body='',divider='red' )
-    st.header('End')
-
-###### add issue ################################################################################   
-    def add_issue(issue_str=None):
-        if issue_str !=None and issue_str not in st.session_state.issue_list:
-            st.session_state.issue_list.append(issue_str)
-
-    def delete_field(index):
-        del st.session_state.issue_list[index]
-        del st.session_state.deletes[index]
     def reset_no():
         if st.session_state.is_maintenance == 'no':
             st.session_state.key_area = 'unclear'
@@ -190,16 +116,140 @@ else:
             st.session_state.key_maintype_new=None
             st.session_state.key_subtype_new=None
     
-    # st.sidebar.divider()
+    reset_no()
+    ####
+    def reset():
+        st.session_state.is_maintenance = 'no'
+        reset_no()
+        st.session_state.issue_list = []
+        st.session_state.deletes = []
+    if st.session_state.bool_final_submit_confirm==2:
+        st.session_state.bool_final_submit_confirm=0
+        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+        st.session_state.bool_read_email = True
+        reset()
+        if st.session_state.bool_final_submit_sccuss == 1:
+            st.sidebar.warning("Your final submition is successfully")
+        elif st.session_state.bool_final_submit_sccuss == 0:
+            st.sidebar.error("Your final submition is not saved! please report this to shuming.liang@uts.edu.au")
+##### load email #####################################################################################
+    def pull_idemail_labeled():
+        cur = connect_db().cursor()
+        cur.execute('select idemail from email.labels')    
+        ids = [x[0] for x in cur.fetchall()]
+        return ids
+    def push_idemail_open(id_email=None,username=None):
+        cur = connect_db().cursor()
+        sql = f"""INSERT INTO email.openedids (timeopened, idemail, username) VALUES ('{str(time.time())}','{id_email}', '{username}')"""       
+        print (sql)         
+        cur = connect_db().cursor()
+        cur.execute(sql)            
+        cur.execute('commit')
+    def pull_idemail_open():
+        cur = connect_db().cursor()
+        cur.execute('select * from email.openedids') 
+        df = pd.DataFrame(cur.fetchall())
+        df.columns = [ x.name for x in cur.description ]
+        df['timeopened'] = time.time() - df['timeopened'].astype(float)
+        ids = df['idemail'][df['timeopened']<100].to_list()     
+        print (df)   
+        return ids
+    
+    def read_email(sample=False):
+        @st.cache_data
+        def get_email_data():
+            df = pd.read_csv('./data/b00.csv',sep=',')
+            idsallset = set(df["ID"].unique())
+            print('######################')
+            return df, idsallset
+        ####
+        start_time = time.time()
+        idslabeled = pull_idemail_labeled()
+        print ('idslabeled',idslabeled)
+        idsopened = pull_idemail_open()
+        print('idsopened',idsopened)
+        ids_used = set(idslabeled+idsopened)  
+        print ('ids_used',ids_used)
+        print("--- %s pd seconds ---" % (time.time() - start_time))
+
+        df, idsallset = get_email_data()
+        df = df[['Body','ID']]
+        idx_unlabled = idsallset.difference(ids_used)
+        df_email = df.set_index('ID',drop=True)
+        df_out = df_email.loc[list(idx_unlabled)]
+        df_onerow = df_out.sample(1)
+        # df_bool = df['ID'].apply(lambda x: x not in files)
+        return df_onerow['Body'].values[0],df_onerow.index[0]            
+        
+    if st.session_state.bool_read_email == True:
+         st.session_state.bool_read_email = False
+         st.session_state.text_email, st.session_state.id_email = read_email()
+         push_idemail_open(id_email=st.session_state.id_email,username=username)
+    text_email,id_email = st.session_state.text_email, st.session_state.id_email
+    print (id_email)    
+    st.header(f'Text to analyze. The email id is: {id_email}', divider='red')
+    st.markdown(text_email)
+    st.header(body='',divider='red' )
+    st.header('End')
+#### slectbox options #####################################
+    def pull_options():
+        cur = connect_db().cursor()
+        cur.execute('select * from email.issues')
+        opts_df = pd.DataFrame(cur.fetchall())
+        opts_df.columns = [ x.name for x in cur.description ]
+        st.session_state.opts_df = opts_df
+    #### pull latest options from database ####
+    # start_time = time.time()
+    if st.session_state.opts_df is None:
+        pull_options()    
+    if time.time() - st.session_state.time_lastopt >5:
+        st.session_state.time_lastopt = time.time()
+        pull_options()
+        print ('########---------------------$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$-')
+    opts_df = st.session_state.opts_df
+    #### area ####
+    opts_area = opts_df['area']
+    opts_area =opts_area.unique().tolist()
+    if 'unclear' not in opts_area:
+        opts_area.append('unclear')
+    #### location ####
+    opts_location = opts_df.groupby('area')['location'].agg(['unique'])
+    opts_location['unique'] = opts_location['unique'].apply(lambda x: x.tolist())
+    opts_location = opts_location['unique'].to_dict()
+    opts_location['unclear']=['unclear']
+    #### issue ####
+    opts_issue = opts_df.groupby('location')['issue'].agg(['unique'])
+    opts_issue['unique'] = opts_issue['unique'].apply(lambda x: x.tolist())
+    opts_issue = opts_issue['unique'].to_dict()
+    opts_issue['unclear']=['unclear']
+    #### maintype ####
+    opts_maintype = opts_df.groupby('issue')['maintype'].agg(['unique'])
+    opts_maintype['unique'] = opts_maintype['unique'].apply(lambda x: x.tolist())
+    opts_maintype = opts_maintype['unique'].to_dict()
+    opts_maintype['unclear']=['unclear']
+    #### subtype ####
+    opts_subtype = opts_df.groupby('maintype')['subtype'].agg(['unique'])
+    opts_subtype['unique'] = opts_subtype['unique'].apply(lambda x: x.tolist())
+    opts_subtype = opts_subtype['unique'].to_dict()
+    opts_subtype['unclear']=['unclear']
+
+    # print("---1 %s cur seconds ---" % (time.time() - start_time))
+
+###### add issue ################################################################################  
+    
     is_maintenance = st.sidebar.selectbox( "Is it related to the property maintenance?", ("no","yes"), 
-                                            placeholder="Select yes or no...", key='is_maintenance',on_change =reset_no)   
+                                            placeholder="Select yes or no...", key='is_maintenance')   
     disable = False if is_maintenance=='yes'else True
 
-    def select_issues(label='0',opt=['0','1'],idx=0,phld="",disable=disable,key=['0','1']):
-        opt.append('add a new option')
+    def select_issues(label='0',opt=['0','1'], phld="", idx=0, disable=disable,key=['0','1']):
+        def change_key():
+            pass
+        opt.sort()
+        opt.append('add a new option')        
+        
         c1, c2 = st.sidebar.columns([0.6,0.4], gap='small') 
         with c1:
-            item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, disabled=disable, key=key[0])   
+            item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, on_change = change_key, disabled=disable, key=key[0])   
             if st.session_state[key[0]] != "add a new option":
                 st.session_state[key[1]] = None         
         with c2:                
@@ -207,14 +257,20 @@ else:
             new_option = st.text_input(label="Input your new keyword",label_visibility='visible', placeholder='Input your new keyword',
                                         disabled = disable_newopt,key=key[1])              
             if item=="add a new option":
-                item = new_option.lower() if new_option!='' else 'unclear'            
+                if new_option!='':
+                    item = new_option.lower()  
+                    if new_option in opt:
+                        # st.session_state[key[0]] = new_option
+                        # item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, disabled=disable, key=key[0]) 
+                        st.warning(f"Your new option '{new_option}' has been existed in the left selectbox.")
+                    else:                        
+                        st.session_state.newopts[label]=item
+                else:
+                    item = 'unclear'                    
         
-        # with st.sidebar:   
-        if new_option in opt:
-            st.sidebar.warning(f"Your new option '{new_option}' has been existed in the left selectbox.")
         return item
-    ##########
-    area = select_issues("which room or area has issue?",opts_area,disable=disable,key=['key_area','key_area_new'])     
+    ################################
+    area = select_issues("which room or area has issue?",opts_area,disable=disable,key=['key_area','key_area_new'])  
     ########## 
     if area not in opts_location.keys():
         opts_location[area] = ['unclear']  
@@ -235,7 +291,8 @@ else:
         opts_subtype[maintype] = ['unclear']
     subtype = select_issues("more maintenance requied?",opts_subtype[maintype],idx=None,disable=disable,key=['key_subtype','key_subtype_new'])
     # print ('st.session_state.key_area',st.session_state.key_area)    
-
+    
+   
 ######## add issue description ################################################################################
     issue_str_list = [is_maintenance,area,location,issue,maintype,subtype]
     opt_long_checklist=[]
@@ -251,6 +308,14 @@ else:
     print (issue_str)
 
     ### add issue button ##########
+    def add_issue(issue_str=None):
+        if issue_str !=None and issue_str not in st.session_state.issue_list:
+            st.session_state.issue_list.append(issue_str)
+
+    def delete_field(index):
+        del st.session_state.issue_list[index]
+        del st.session_state.deletes[index]
+
     def add_newopt_button():
         st.session_state.bool_add_newopt_button = True
     
@@ -265,11 +330,9 @@ else:
     with c2:
         st.button("➕ Add new keywrod", on_click=add_newopt_button, disabled=bool_addopt, key='add_new_options')
    
-    ### modal popup moduel###################################
-    
-    # print("--- %s cur seconds ---" % (time.time() - start_time))
+    ### add_newopt_button popup double confirm ###################################
     def modal_save_newopt_confirm():
-        st.session_state.bool_save_newopt=True
+        st.session_state.bool_save_newopt_confirm=1
     
     with st.sidebar:   
         if st.session_state.bool_add_newopt_button:             
@@ -289,68 +352,115 @@ else:
                         st.button('Back to re-edit it', key='key_add_newopt_revise')
                 else:
                     with my_modal.container(): 
-                        st.markdown(f"<p style='text-align: center; '>Your new maintenance description is:</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='text-align: center; '>Your new keyword description is:</p>", unsafe_allow_html=True)
                         st.markdown(f"<h3 style='text-align: center; color: red;'>{issue_str}</h3>", unsafe_allow_html=True)
                         st.markdown(f"<p style='text-align: center; '>Please save or re-edit it. Note that the saving will update the options in the system!</p>", unsafe_allow_html=True)
                         
                         st.button('Back to re-edit it', key='key_add_newopt_revise')
                         st.button('Confirm to save it to system',on_click=modal_save_newopt_confirm, key='key_add_newopt_confirm')
-    ### insert new options if st.session_state.bool_save_newopt ########################################################################################################################
-    print ('st.session_state.bool_save_newopt',st.session_state.bool_save_newopt)
-    if st.session_state.bool_save_newopt:
-        sql = f"""INSERT INTO email.issues (area, location, issue, maintype, subtype, issuestr, idemail, username) VALUES ('{area}','{location}','{issue}','{maintype}','{subtype}', '{issue_str}', '{id_email}', '{username}')"""
-       
-        print (sql)                 
-        # cur method################################
+    #### insert new options ########################################################
+    print ('st.session_state.bool_save_newopt_confirm',st.session_state.bool_save_newopt_confirm)
+    if st.session_state.bool_save_newopt_confirm==1:        
+        st.session_state.bool_save_newopt_confirm=2
+        sql = f"""INSERT INTO email.issues (area, location, issue, maintype, subtype, issuestr, idemail, username) VALUES ('{area}','{location}','{issue}','{maintype}','{subtype}', '{issue_str}', '{id_email}', '{username}')"""       
+        print (sql)         
         cur = connect_db().cursor()
         try:
-            st.sidebar.warning("Your new issue description is saved successfully")
             cur.execute(sql)            
-            cur.execute('commit')
+            cur.execute('commit')            
+            pull_options()
+            # add_issue(issue_str)
+            st.session_state.bool_save_newopt_sccuss = 1
         except:
-            st.sidebar.error("Your new issue description is not saved! please report this to shuming.liang@uts.edu.au")
             cur.execute("rollback") 
-        st.session_state.bool_save_newopt=False
-
-    ########################################################################################################################################################################
-            
-
+            st.session_state.bool_save_newopt_sccuss = 0
+        print (';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+        st.rerun()
+    if st.session_state.bool_save_newopt_confirm==2:
+        st.session_state.bool_save_newopt_confirm=0
+        if st.session_state.bool_save_newopt_sccuss == 1:
+            st.sidebar.warning("Your new keyword is saved successfully")
+        elif st.session_state.bool_save_newopt_sccuss == 0:
+            st.sidebar.error("Your new keyword is not saved! please report this to shuming.liang@uts.edu.au")
+        
 ######## showing issues###############################################
-    st.sidebar.divider()
+    # st.sidebar.divider()
+    st.sidebar.subheader('list of issue description',divider='orange')
     for i in range(len(st.session_state.issue_list)):
         c1, c2 = st.sidebar.columns([0.2,0.8], gap='small')    
         if is_maintenance=='yes':                    
             with c1:
                 st.session_state.deletes.append(st.button("❌", key=f"delete{i}", on_click=delete_field, args=(i,)))
             with c2:
-                st.write(st.session_state.issue_list[i])
+                st.write(st.session_state.issue_list[i])       
+            
     # st.write(issue_list)
     print ('st.session_state.issue_list',st.session_state.issue_list)
+    if is_maintenance == 'no':
+        c1, c2 = st.sidebar.columns([0.4,0.5], gap='small')    
+        with c2:
+            st.write('no')
+    st.sidebar.subheader('',divider='orange')
 
-###### submit button##################################################################
-        
-    
-    def reset():
-        st.session_state.is_maintenance = 'no'
-        reset_no()
-        st.session_state.issue_list = []
-        st.session_state.deletes = []
+###### submit final results to email.labels##################################################################      
+    def bool_final_submit():
+        st.session_state.bool_final_submit=True
+    def bool_final_submit_confirm():
+        st.session_state.bool_final_submit_confirm=1
 
-    st.sidebar.divider()
-    st.markdown("""
-            <style>
-            div.stButton {text-align:center; color: blue;}
-            </style>""", unsafe_allow_html=True)
-    submit = st.sidebar.button(label="Final submit",on_click=reset)    
+    st.sidebar.button(label="Final submit", on_click=bool_final_submit, key='key_final_submit')    
+
+    res_final = ';'.join(st.session_state.issue_list) if len(st.session_state.issue_list)>0 else 'no'
+    with st.sidebar:   
+        if st.session_state.bool_final_submit:             
+            my_modal = Modal(title='', key='key_final_submit_modal',padding=0,max_width=800)      
+            st.session_state.bool_final_submit=False
+
+            if st.session_state.is_maintenance == 'yes' and res_final=='no':
+                with my_modal.container(): 
+                    st.markdown(f"<p style='text-align: center; '>Your have selected 'yes' in the first question, but the list of issue descriptions is empty! </p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='text-align: center; '>Please go back re-edit it. Add issue if the first question is 'yes'. If no any issues, the first question must be 'no'.</p>", unsafe_allow_html=True)
+                    # st.markdown(f"<p style='text-align: center; '>Please go back re-edit it. Click the 'Add issue' button after selecting the options in the slectbox if the first question is 'yes'.</p>", unsafe_allow_html=True)                    
+                    st.button('Back to re-edit it', key='key_final_submit_revise')
+            else:
+                with my_modal.container(): 
+                    st.markdown(f"<p style='text-align: center; '>Your final categorization result is:</p>", unsafe_allow_html=True)
+                    st.markdown(f"<h3 style='text-align: center; color: red;'>{res_final}</h3>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='text-align: center; '>Please confirm to submit or re-edit it. Note that once submit it, you cannot change the result for this text!</p>", unsafe_allow_html=True)
+                    
+                    st.button('Back to re-edit it', key='key_final_submit_revise')
+                    st.button('Confirm to submit it',on_click=bool_final_submit_confirm, key='key_final_submit_confirm')
+    if st.session_state.bool_final_submit_confirm==1:
+        st.session_state.bool_final_submit_confirm=2
+        sql = f"""INSERT INTO email.labels (lable, timesubmit, idemail, username) VALUES ('{res_final}','{str(time.time())}','{id_email}', '{username}')"""       
+        print (sql)         
+        cur = connect_db().cursor()
+        # cur.execute(sql)            
+        # cur.execute('commit')
+        try:
+            cur.execute(sql)            
+            cur.execute('commit')            
+            st.session_state.bool_final_submit_sccuss = 1
+            print ('***********this is end **************************',st.session_state.bool_final_submit_sccuss)
+            st.rerun()    
+        except Exception as e:
+            cur.execute("rollback") 
+            st.session_state.bool_final_submit_sccuss = 0
+            print ('***********this is end **************************',e)
     
-    if submit:            
-        df = pd.DataFrame([[id_email,is_maintenance,area,location,issue,maintype]],columns=['id_email','is_maintenance','area','location','issue','maintype'])
-        print (df)
-        df.to_csv(os.path.join(path_results,id_email+'.csv'),index=False)
-        st.rerun()
+            
+    # if st.session_state.bool_final_submit_confirm==2:
+        # st.session_state.bool_final_submit_confirm=0
+        # st.session_state.bool_read_email = True
+        # reset()
+        # if st.session_state.bool_final_submit_sccuss == 1:
+        #     st.sidebar.warning("Your final submition is successfully")
+        # elif st.session_state.bool_final_submit_sccuss == 0:
+        #     st.sidebar.error("Your final submition is not saved! please report this to shuming.liang@uts.edu.au")
+    
 
     # if not submit and is_maintenance is not None:
-    st.sidebar.write("Please do not forget to submit your results before annotating next one",submit)
+    # st.sidebar.write("Please do not forget to submit your results before annotating next one")
 ##########################################################################################################################################################
 ##########################################################################################################################################################
 
