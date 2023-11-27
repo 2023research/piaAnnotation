@@ -270,7 +270,7 @@ else:
             if item=="add a new option":
                 if new_option!='':
                     item = new_option.lower()  
-                    if new_option in opt:
+                    if new_option in opt or new_option[:-1] in opt:
                         # st.session_state[key[0]] = new_option
                         # item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, disabled=disable, key=key[0]) 
                         st.warning(f"Your new option '{new_option}' has been existed in the left selectbox.")
