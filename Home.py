@@ -164,7 +164,7 @@ else:
     def read_email(sample=False):
         @st.cache_data
         def get_email_data():
-            df = pd.read_csv('./data/b00.csv',sep=',')
+            df = pd.read_csv('./data/test_pos_wlTFLR_key_6k.csv',sep=',')
             idsallset = set(df["ID"].unique())
             print('######################')
             return df, idsallset
@@ -310,7 +310,7 @@ else:
     issue_str=""
     for i, ele in enumerate(issue_str_list):  
         if ele !=None:
-            if len(ele)>20:
+            if len(ele)>22:
                 opt_long_checklist.append(ele)
         if i<len(issue_str_list)-1:
             issue_str=issue_str+ele+'/'# if ele !=None else issue_str+'None/'
