@@ -227,22 +227,26 @@ else:
     opts_location = opts_df.groupby('area')['location'].agg(['unique'])
     opts_location['unique'] = opts_location['unique'].apply(lambda x: x.tolist())
     opts_location = opts_location['unique'].to_dict()
-    opts_location['unclear']=['unclear']
+    if 'unclear' not in opts_location:
+        opts_location['unclear']=['unclear']
     #### issue ####
     opts_issue = opts_df.groupby('location')['issue'].agg(['unique'])
     opts_issue['unique'] = opts_issue['unique'].apply(lambda x: x.tolist())
     opts_issue = opts_issue['unique'].to_dict()
-    opts_issue['unclear']=['unclear']
+    if 'unclear' not in opts_issue:
+        opts_issue['unclear']=['unclear']
     #### maintype ####
     opts_maintype = opts_df.groupby('issue')['maintype'].agg(['unique'])
     opts_maintype['unique'] = opts_maintype['unique'].apply(lambda x: x.tolist())
     opts_maintype = opts_maintype['unique'].to_dict()
-    opts_maintype['unclear']=['unclear']
+    if 'unclear' not in opts_maintype:
+        opts_maintype['unclear']=['unclear']
     #### subtype ####
     opts_subtype = opts_df.groupby('maintype')['subtype'].agg(['unique'])
     opts_subtype['unique'] = opts_subtype['unique'].apply(lambda x: x.tolist())
     opts_subtype = opts_subtype['unique'].to_dict()
-    opts_subtype['unclear']=['unclear']
+    if 'unclear' not in opts_subtype:
+        opts_subtype['unclear']=['unclear']
 
     # print("---1 %s cur seconds ---" % (time.time() - start_time))
 
@@ -252,12 +256,12 @@ else:
                                             placeholder="Select yes or no...", key='is_maintenance')   
     disable = False if is_maintenance=='yes'else True
 
-    def select_issues(label='0',opt=['0','1'], phld="", idx=0, disable=disable,key=['0','1']):
+    def select_issues(label='0',opt=['0','1'], phld="", disable=disable,key=['0','1']):
         def change_key():
             pass
         opt.sort()
-        opt.append('add a new option')        
-        
+        opt.append('add a new option')  
+        idx = opt.index('unclear')
         c1, c2 = st.sidebar.columns([0.6,0.4], gap='small') 
         with c1:
             item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, on_change = change_key, disabled=disable, key=key[0])   
@@ -280,27 +284,36 @@ else:
                     item = 'unclear'                    
         
         return item
-    ################################
+    ###################################################################
     area = select_issues("which room or area has issue?",opts_area,disable=disable,key=['key_area','key_area_new'])  
-    ########## 
+    ################################################################### 
     if area not in opts_location.keys():
-        opts_location[area] = ['unclear']  
+        opts_location[area] = ['unclear'] 
+    if 'unclear' not in opts_location[area]:
+         opts_location[area].append('unclear') 
     location = select_issues(f"In {area}, which part has issue?",opts_location[area],disable=disable,key=['key_location','key_location_new'])
     # check if new location has been existed in area like bedroom
     if location in opts_area and location != "add a new option" and location != "unclear" and location != "general":        
         st.sidebar.error(f"""Your new keyword '{location}' has been existed in the selectbox of "which room or area has issue?".""")
-    ##########
+    ################################################################### 
     if location not in opts_issue.keys():
         opts_issue[location] = ['unclear']
+    if 'unclear' not in opts_issue[location]:
+         opts_issue[location].append('unclear')
     issue = select_issues(f"What's the problem with {location}?",opts_issue[location],disable=disable,key=['key_issue','key_issue_new'])
-    ##########
+    ################################################################### 
     if issue not in opts_maintype.keys():
         opts_maintype[issue] = ['unclear']
+    if 'unclear' not in  opts_maintype[issue]:
+         opts_maintype[issue].append('unclear')
     maintype = select_issues("what maintenance requied?",opts_maintype[issue],disable=disable,key=['key_maintype','key_maintype_new'])
-    ##########
+    # print (maintype)
+    ################################################################### 
     if maintype not in opts_subtype.keys():
         opts_subtype[maintype] = ['unclear']
-    subtype = select_issues("more maintenance requied?",opts_subtype[maintype],idx=None,disable=disable,key=['key_subtype','key_subtype_new'])
+    if 'unclear' not in  opts_subtype[maintype]:
+         opts_subtype[maintype].append('unclear')
+    subtype = select_issues("more maintenance requied?",opts_subtype[maintype], disable=disable,key=['key_subtype','key_subtype_new'])
     # print ('st.session_state.key_area',st.session_state.key_area)    
     
    
