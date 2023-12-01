@@ -50,11 +50,11 @@ if "issue_list" not in st.session_state:
     st.session_state.opts_df = None
     ##
     st.session_state.is_maintenance = 'no'
-    st.session_state.key_area = 'unclear'
-    st.session_state.key_location = 'unclear'
-    st.session_state.key_issue = 'unclear'
-    st.session_state.key_maintype = 'unclear'
-    st.session_state.key_subtype = None   
+    st.session_state.key_area = 'other'
+    st.session_state.key_location = 'other'
+    st.session_state.key_issue = 'other'
+    st.session_state.key_maintype = 'other'
+    st.session_state.key_subtype = 'other'   
     st.session_state.key_area_new=None
     st.session_state.key_location_new=None
     st.session_state.key_issue_new=None
@@ -78,7 +78,8 @@ st.markdown("""<style>div.stButton {text-align:center; color: blue;}</style>""",
 
 ##### login #######################################################################################
 # login authorization ###########
-# usernames = ['john','james','oliver','david','emma','alex']
+# usernames = ['john','james','oliver','david','emma','alex']shuming 8768, xiaohan:6323,michael:3232
+#Kevin:8963, Andy:2836, Leon:4936, Ray:3232, Jeffrey:6323, Tony:8768
 # passwords = ['8963','2836', '4936','3232','6323','8768']
 
 # hashed_passwords = stauth.Hasher(['8963','2836', '4936','3232','6323','8768']).generate()
@@ -105,11 +106,11 @@ else:
 ###############################################################################################   
     def reset_no():
         if st.session_state.is_maintenance == 'no':
-            st.session_state.key_area = 'unclear'
-            st.session_state.key_location = 'unclear'
-            st.session_state.key_issue = 'unclear'
-            st.session_state.key_maintype = 'unclear'
-            st.session_state.key_subtype = None   
+            st.session_state.key_area = 'other'
+            st.session_state.key_location = 'other'
+            st.session_state.key_issue = 'other'
+            st.session_state.key_maintype = 'other'
+            st.session_state.key_subtype = 'other'   
             st.session_state.key_area_new=None
             st.session_state.key_location_new=None
             st.session_state.key_issue_new=None
@@ -185,6 +186,8 @@ else:
         df_out = df_email.loc[list(idx_unlabled)]
         df_onerow = df_out.sample(1)
         # df_bool = df['ID'].apply(lambda x: x not in files)
+        ## check special case
+        df_onerow = df_email[df_email.index=='a5_89923']
         return df_onerow['Body'].values[0],df_onerow.index[0]            
         
     if st.session_state.bool_read_email == True:
@@ -206,7 +209,8 @@ else:
         if opts_df.shape[0]>0:
             opts_df.columns = [ x.name for x in cur.description ]
         else:
-            opts_df = pd.DataFrame(['unclear','unclear','unclear','unclear','unclear','unclear'])
+            opts_df = pd.DataFrame([['other','other','other','other','other','other']])
+            # print (opts_df)
             opts_df.columns = ['area','location','issue','maintype','subtype','issuestr']
         st.session_state.opts_df = opts_df
     #### pull latest options from database ####
@@ -218,35 +222,59 @@ else:
         pull_options()
         print ('########---------------------$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$-')
     opts_df = st.session_state.opts_df
-    #### area ####
+    #### area ###########################################################
     opts_area = opts_df['area']
     opts_area =opts_area.unique().tolist()
-    if 'unclear' not in opts_area:
-        opts_area.append('unclear')
-    #### location ####
+    if 'other' not in opts_area:
+        opts_area.append('other')
+    #### location #######################################################
     opts_location = opts_df.groupby('area')['location'].agg(['unique'])
     opts_location['unique'] = opts_location['unique'].apply(lambda x: x.tolist())
     opts_location = opts_location['unique'].to_dict()
-    if 'unclear' not in opts_location:
-        opts_location['unclear']=['unclear']
-    #### issue ####
+    def merge_room_parts(opts_location,location_general =  ['ensuite','bathroom']):
+        location_list = []        
+        for room in location_general:
+            if room in opts_location.keys():
+                location_list+=opts_location[room]
+        for room in location_general:        
+            opts_location[room] = list(set(location_list))
+        if 'bedroom' in location_general:
+            for key in opts_location.keys():
+                if key not in location_general and key!='other':
+                    opts_location[key] = list(set(opts_location[key]+list(set(location_list))))
+        return opts_location
+    location_general = ['entry/hall','living room','bedroom','study room','dining room']
+    opts_location = merge_room_parts(opts_location,location_general)
+    opts_location = merge_room_parts(opts_location,['ensuite','bathroom'])
+    opts_location = merge_room_parts(opts_location,['storage room','balcony','courtyard','garage'])
+    
+    
+
+    if 'other' not in opts_location:
+        opts_location['other']=['other']
+    #### issue ##############################################################
     opts_issue = opts_df.groupby('location')['issue'].agg(['unique'])
     opts_issue['unique'] = opts_issue['unique'].apply(lambda x: x.tolist())
     opts_issue = opts_issue['unique'].to_dict()
-    if 'unclear' not in opts_issue:
-        opts_issue['unclear']=['unclear']
-    #### maintype ####
-    opts_maintype = opts_df.groupby('issue')['maintype'].agg(['unique'])
-    opts_maintype['unique'] = opts_maintype['unique'].apply(lambda x: x.tolist())
-    opts_maintype = opts_maintype['unique'].to_dict()
-    if 'unclear' not in opts_maintype:
-        opts_maintype['unclear']=['unclear']
-    #### subtype ####
+    if 'other' not in opts_issue:
+        opts_issue['other']=['other']
+    #### maintype ###########################################################
+    opts_maintype = opts_df['maintype']
+    opts_maintype =opts_maintype.unique().tolist()
+    if 'other' not in opts_maintype:
+        opts_maintype.append('other')
+
+    # opts_maintype = opts_df.groupby('issue')['maintype'].agg(['unique'])
+    # opts_maintype['unique'] = opts_maintype['unique'].apply(lambda x: x.tolist())
+    # opts_maintype = opts_maintype['unique'].to_dict()
+    # if 'other' not in opts_maintype:
+    #     opts_maintype['other']=['other']
+    #### subtype ############################################################
     opts_subtype = opts_df.groupby('maintype')['subtype'].agg(['unique'])
     opts_subtype['unique'] = opts_subtype['unique'].apply(lambda x: x.tolist())
     opts_subtype = opts_subtype['unique'].to_dict()
-    if 'unclear' not in opts_subtype:
-        opts_subtype['unclear']=['unclear']
+    if 'other' not in opts_subtype:
+        opts_subtype['other']=['other']
 
     # print("---1 %s cur seconds ---" % (time.time() - start_time))
 
@@ -259,9 +287,11 @@ else:
     def select_issues(label='0',opt=['0','1'], phld="", disable=disable,key=['0','1']):
         def change_key():
             pass
+        opt = [value for value in opt if value != "other"]        
         opt.sort()
-        opt.append('add a new option')  
-        idx = opt.index('unclear')
+        opt.append('other')  
+        opt.append('add a new option') 
+        idx = opt.index('other')
         c1, c2 = st.sidebar.columns([0.6,0.4], gap='small') 
         with c1:
             item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, on_change = change_key, disabled=disable, key=key[0])   
@@ -281,39 +311,40 @@ else:
                     else:                        
                         st.session_state.newopts[label]=item
                 else:
-                    item = 'unclear'                    
+                    item = 'other'                    
         
         return item
     ###################################################################
-    area = select_issues("which room or area has issue?",opts_area,disable=disable,key=['key_area','key_area_new'])  
+    area = select_issues("which area has issue?",opts_area,disable=disable,key=['key_area','key_area_new'])  
     ################################################################### 
     if area not in opts_location.keys():
-        opts_location[area] = ['unclear'] 
-    if 'unclear' not in opts_location[area]:
-         opts_location[area].append('unclear') 
-    location = select_issues(f"In {area}, which part has issue?",opts_location[area],disable=disable,key=['key_location','key_location_new'])
+        opts_location[area] = ['other'] 
+    if 'other' not in opts_location[area]:
+         opts_location[area].append('other') 
+    location = select_issues(f"which part?",opts_location[area],disable=disable,key=['key_location','key_location_new'])
     # check if new location has been existed in area like bedroom
-    if location in opts_area and location != "add a new option" and location != "unclear" and location != "general":        
+    if location in opts_area and location != "add a new option" and location != "other" and location != "general":        
         st.sidebar.error(f"""Your new keyword '{location}' has been existed in the selectbox of "which room or area has issue?".""")
     ################################################################### 
     if location not in opts_issue.keys():
-        opts_issue[location] = ['unclear']
-    if 'unclear' not in opts_issue[location]:
-         opts_issue[location].append('unclear')
-    issue = select_issues(f"What's the problem with {location}?",opts_issue[location],disable=disable,key=['key_issue','key_issue_new'])
+        opts_issue[location] = ['other']
+    if 'other' not in opts_issue[location]:
+         opts_issue[location].append('other')
+    issue = select_issues(f"issue details",opts_issue[location],disable=disable,key=['key_issue','key_issue_new'])
     ################################################################### 
-    if issue not in opts_maintype.keys():
-        opts_maintype[issue] = ['unclear']
-    if 'unclear' not in  opts_maintype[issue]:
-         opts_maintype[issue].append('unclear')
-    maintype = select_issues("what maintenance requied?",opts_maintype[issue],disable=disable,key=['key_maintype','key_maintype_new'])
+    # if issue not in opts_maintype.keys():
+    #     opts_maintype[issue] = ['other']
+    # if 'other' not in  opts_maintype[issue]:
+    #      opts_maintype[issue].append('other')
+    # maintype = select_issues("what maintenance requied?",opts_maintype[issue],disable=disable,key=['key_maintype','key_maintype_new'])
     # print (maintype)
+    maintype = select_issues("maintenance maintype",opts_maintype,disable=disable,key=['key_maintype','key_maintype_new'])
     ################################################################### 
     if maintype not in opts_subtype.keys():
-        opts_subtype[maintype] = ['unclear']
-    if 'unclear' not in  opts_subtype[maintype]:
-         opts_subtype[maintype].append('unclear')
-    subtype = select_issues("more maintenance requied?",opts_subtype[maintype], disable=disable,key=['key_subtype','key_subtype_new'])
+        opts_subtype[maintype] = ['other']
+    if 'other' not in  opts_subtype[maintype]:
+         opts_subtype[maintype].append('other')
+    subtype = select_issues("maintenance subtype",opts_subtype[maintype], disable=disable,key=['key_subtype','key_subtype_new'])
     # print ('st.session_state.key_area',st.session_state.key_area)    
     
    
@@ -323,10 +354,10 @@ else:
     issue_str=""
     for i, ele in enumerate(issue_str_list):  
         if ele !=None:
-            if len(ele)>22:
+            if len(ele)>50:
                 opt_long_checklist.append(ele)
         if i<len(issue_str_list)-1:
-            issue_str=issue_str+ele+'/'# if ele !=None else issue_str+'None/'
+            issue_str=issue_str+ele+'|'# if ele !=None else issue_str+'None|'
         elif ele !=None:
             issue_str=issue_str+ele # if ele !=None else issue_str+'None'
     print (issue_str)

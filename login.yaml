@@ -24,6 +24,44 @@ credentials:
       email: rbriggs@gmail.com
       name: alex
       password: $2b$12$JHAZepA1yh53O4Oob8b1.e67MpP5iFNWQhCYJDkMPUjydRCGYRzce
+#
+    shuming:
+      email: jsmith@gmail.com
+      name: john
+      password: $2b$12$JHAZepA1yh53O4Oob8b1.e67MpP5iFNWQhCYJDkMPUjydRCGYRzce # Placeholder for hashed password of 'abc'
+    xiaohan:
+      email: rbriggs@gmail.com
+      name: james
+      password: $2b$12$pljOwNCFTEYyY1ZdRE9RPO1fD41fyDiMLj7cBgIL2mvNzz9RpKyT6
+    michael:
+      email: rbriggs@gmail.com
+      name: oliver
+      password: $2b$12$uOPJt3ixEn1PBhprZK9D0un3r2nvwKykUhL4UE8IQfGUt9e/ZrXsu
+    #@ming For now, you just need to put Kevin, Andy, Leon, Ray, Jeffrey and Tony in your code. Send me their passwords or just setup a single password is OK. 
+    kevin:
+      email: jsmith@gmail.com
+      name: john
+      password: $2b$12$Ah0PkNoUWA5fbjRsTa8fxO4tqNyl.Of6jY4rBIjcwKBkGo6MpfxH2 # Placeholder for hashed password of 'abc'
+    andy:
+      email: rbriggs@gmail.com
+      name: james
+      password: $2b$12$Ypwx7V3nN5GOekB2aPu4.OK7G5k1ipN9IcJ6qhL.39neMQISnwx12
+    leon:
+      email: rbriggs@gmail.com
+      name: oliver
+      password: $2b$12$KewxCDJ4ULRViJM0cdW6Zu8DOixgOlqx8sr.pLvzpkEG.6dDr5z/S
+    ray:
+      email: rbriggs@gmail.com
+      name: david
+      password: $2b$12$uOPJt3ixEn1PBhprZK9D0un3r2nvwKykUhL4UE8IQfGUt9e/ZrXsu
+    jeffrey:
+      email: rbriggs@gmail.com
+      name: emma
+      password: $2b$12$pljOwNCFTEYyY1ZdRE9RPO1fD41fyDiMLj7cBgIL2mvNzz9RpKyT6
+    tony:
+      email: rbriggs@gmail.com
+      name: alex
+      password: $2b$12$JHAZepA1yh53O4Oob8b1.e67MpP5iFNWQhCYJDkMPUjydRCGYRzce
 cookie:
   expiry_days: 30
   key: some_signature_key # Must be string
