@@ -172,11 +172,11 @@ else:
         ####
         start_time = time.time()
         idslabeled = pull_idemail_labeled()
-        print ('idslabeled',idslabeled)
+        # print ('idslabeled',idslabeled)
         idsopened = pull_idemail_open()
-        print('idsopened',idsopened)
+        # print('idsopened',idsopened)
         ids_used = set(idslabeled+idsopened)  
-        print ('ids_used',ids_used)
+        # print ('ids_used',ids_used)
         print("--- %s pd seconds ---" % (time.time() - start_time))
 
         df, idsallset = get_email_data()
@@ -187,7 +187,7 @@ else:
         df_onerow = df_out.sample(1)
         # df_bool = df['ID'].apply(lambda x: x not in files)
         ## check special case
-        df_onerow = df_email[df_email.index=='a5_89923']
+        # df_onerow = df_email[df_email.index=='a5_89923']
         return df_onerow['Body'].values[0],df_onerow.index[0]            
         
     if st.session_state.bool_read_email == True:
