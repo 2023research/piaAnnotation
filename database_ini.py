@@ -46,6 +46,7 @@ def create_table_issue():
         issuestr varchar(1500),
         idemail varchar(150),
         username varchar(150),
+        timesubmit varchar(1500),
         note varchar(1500)
         )"""
     cur = connect_db().cursor()
@@ -59,7 +60,8 @@ def create_table_labels():
         timesubmit varchar(1500),
         idemail varchar(150),
         username varchar(150),
-        note varchar(1500)
+        note varchar(1500),
+        timeuse varchar(1500)
         )"""
     cur = connect_db().cursor()
     cur.execute(sql)
