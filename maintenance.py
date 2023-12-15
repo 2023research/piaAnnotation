@@ -30,13 +30,37 @@ def pull_idemail_open():
         ids = ['temp']   
     return ids
 
-def read_email(sample=False):
-    @st.cache_data
-    def get_email_data():
-        df = pd.read_csv('./data/test_pos_wlTFLR_key_6k.csv',sep=',')
-        idsallset = set(df["ID"].unique())
-        print('######################')
-        return df, idsallset
+def read_email(sample=False,username='other'):
+    if username=='ray':
+        @st.cache_data
+        def get_email_data():
+            df = pd.read_csv('./data/ray.csv',sep=',')
+            idsallset = set(df["ID"].unique())
+            return df, idsallset
+    elif username=='tony':
+        @st.cache_data
+        def get_email_data():
+            df = pd.read_csv('./data/tony.csv',sep=',')
+            idsallset = set(df["ID"].unique())
+            return df, idsallset    
+    elif username=='leon':
+        @st.cache_data
+        def get_email_data():
+            df = pd.read_csv('./data/leon.csv',sep=',')
+            idsallset = set(df["ID"].unique())
+            return df, idsallset    
+    elif username=='kevin':
+        @st.cache_data
+        def get_email_data():
+            df = pd.read_csv('./data/kevin.csv',sep=',')
+            idsallset = set(df["ID"].unique())
+            return df, idsallset
+    elif username=='other':
+        @st.cache_data
+        def get_email_data():
+            df = pd.read_csv('./data/test_pos_wlTFLR_key_6k.csv',sep=',')
+            idsallset = set(df["ID"].unique())
+            return df, idsallset
     ####
     start_time = time.time()
     idslabeled = pull_idemail_labeled()

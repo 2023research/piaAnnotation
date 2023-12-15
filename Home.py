@@ -24,18 +24,247 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
 # from utils import *
-from maintenance import *
-
+# from maintenance import *
+import pybase64
 import yaml
 from yaml.loader import SafeLoader
 
 st.set_page_config(layout="wide")
+from streamlit.elements.utils import _shown_default_value_warning
+_shown_default_value_warning = True
+##########################################################################################################
+######################################## Functions #######################################################
+##########################################################################################################
+
+###############################################################################################   
+##### load email #####################################################################################
+def pull_idemail_labeled():
+    cur = connect_db().cursor()
+    cur.execute('select idemail from email.labels')    
+    ids = [x[0] for x in cur.fetchall()]
+    if len(ids)==0:
+        ids=['temp']
+    return ids
+def push_idemail_open(id_email=None,username=None):
+    cur = connect_db().cursor()
+    sql = f"""INSERT INTO email.openedids (timeopened, idemail, username) VALUES ('{str(time.time())}','{id_email}', '{username}')"""       
+    print (sql)         
+    cur = connect_db().cursor()
+    cur.execute(sql)            
+    cur.execute('commit')
+def pull_idemail_open():
+    cur = connect_db().cursor()
+    cur.execute('select * from email.openedids') 
+    df = pd.DataFrame(cur.fetchall()) 
+    # print ('lllllllllllllllllllll',df.shape)       
+    if df.shape[1]>0:
+        df.columns = [ x.name for x in cur.description ]
+        df['timeopened'] = time.time() - df['timeopened'].astype(float)
+        ids = df['idemail'][df['timeopened']<1000].to_list()     
+        # print (df)
+    else:
+        ids = ['temp']   
+    return ids
+
+def read_email(sample=False,username='other'):
+    @st.cache_data
+    def get_email_data_ray():
+        df = pd.read_csv('./data/ray.csv',sep=',')
+        idsallset = set(df["ID"].unique())
+        return df, idsallset
+    @st.cache_data
+    def get_email_data_tony():
+        df = pd.read_csv('./data/tony.csv',sep=',')
+        idsallset = set(df["ID"].unique())
+        return df, idsallset    
+    @st.cache_data
+    def get_email_data_leon():
+        df = pd.read_csv('./data/leon.csv',sep=',')
+        idsallset = set(df["ID"].unique())
+        return df, idsallset  
+    @st.cache_data
+    def get_email_data_kevin():
+        df = pd.read_csv('./data/kevin.csv',sep=',')
+        idsallset = set(df["ID"].unique())
+        return df, idsallset
+    @st.cache_data
+    def get_email_data():
+        df = pd.read_csv('./data/test_pos_wlTFLR_key_6k.csv',sep=',')
+        idsallset = set(df["ID"].unique())
+        return df, idsallset
+    ####
+    start_time = time.time()
+    idslabeled = pull_idemail_labeled()
+    # print ('idslabeled',idslabeled)
+    idsopened = pull_idemail_open()
+    # print('idsopened',idsopened)
+    ids_used = set(idslabeled+idsopened)  
+    # print ('ids_used',ids_used)
+    print("--- %s pd seconds ---" % (time.time() - start_time))
+
+    
+    if username=='ray':
+        df, idsallset = get_email_data_ray()
+    elif username=='tony':
+        df, idsallset = get_email_data_tony()
+    elif username=='leon':   
+        df, idsallset = get_email_data_leon()
+    elif username=='kevin':
+        df, idsallset = get_email_data_kevin()
+    elif username=='other':
+        df, idsallset = get_email_data()
+    df = df[['Body','ID']]
+    df['sort']=df.index
+    idx_unlabled = idsallset.difference(ids_used)
+    df_email = df.set_index('ID',drop=True)
+    df_out = df_email.loc[list(idx_unlabled)]
+    df_out.sort_values(by='sort',inplace=True)
+    # df_onerow = df_out.sample(1)
+    df_onerow = df_out.iloc[[0]]
+    # idx_unlabled = list(idx_unlabled)
+    # idx_unlabled.sort()
+    print ('@@@@@@@@@@@@@@@@@@@@@',df_out.shape)
+    # df_bool = df['ID'].apply(lambda x: x not in files)
+    ## check special case
+    # df_onerow = df_email[df_email.index=='a1_26109']
+    return df_onerow['Body'].values[0],df_onerow.index[0]            
+    
+
+#### slectbox options #####################################
+def pull_options():
+    cur = connect_db().cursor()
+    cur.execute('select * from email.issues')
+    opts_df = pd.DataFrame(cur.fetchall())
+    if opts_df.shape[0]>0:
+        opts_df.columns = [ x.name for x in cur.description ]
+    else:
+        opts_df = pd.DataFrame([['other','other','other','other','other','other']])
+        # print (opts_df)
+        opts_df.columns = ['area','location','issue','maintype','subtype','issuestr']
+    st.session_state.opts_df = opts_df
+def maintenance_options():    
+    #### pull latest options from database ####
+    # start_time = time.time()
+    if st.session_state.opts_df is None:
+        pull_options()    
+    if time.time() - st.session_state.time_lastopt >5:
+        st.session_state.time_lastopt = time.time()
+        pull_options()
+        print ('########---------------------$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$-')
+    ####################################################################
+    
+    opts_df = st.session_state.opts_df
+    #### related #####################################################
+    opts_related = opts_df['subsubsubtype']
+    opts_related =opts_related.unique().tolist()
+    if 'other' not in opts_related:
+        opts_related.append('other')
+
+    ##################################################################
+    #### maintenance options #########################################
+    opts_df = opts_df[opts_df['subsubsubtype']=='maintenance']
+    # print (opts_df['subsubsubtype'])
+    #### area ###########################################################
+    opts_area = opts_df['area']
+    opts_area =opts_area.unique().tolist()
+    if 'other' not in opts_area:
+        opts_area.append('other')
+    #### location #######################################################
+    opts_location = opts_df.groupby('area')['location'].agg(['unique'])
+    opts_location['unique'] = opts_location['unique'].apply(lambda x: x.tolist())
+    opts_location = opts_location['unique'].to_dict()
+    def merge_room_parts(opts_location,location_general =  ['ensuite','bathroom']):
+        location_list = []        
+        for room in location_general:
+            if room in opts_location.keys():
+                location_list+=opts_location[room]
+        for room in location_general:        
+            opts_location[room] = list(set(location_list))
+        if 'bedroom' in location_general:
+            for key in opts_location.keys():
+                if key not in location_general and key!='other':
+                    opts_location[key] = list(set(opts_location[key]+list(set(location_list))))
+        return opts_location
+    location_general = ['entry/hall','living room','bedroom','study room','dining room']
+    opts_location = merge_room_parts(opts_location,location_general)
+    opts_location = merge_room_parts(opts_location,['ensuite','bathroom'])
+    opts_location = merge_room_parts(opts_location,['storage room','balcony','courtyard','garage'])
+    
+    if 'other' not in opts_location:
+        opts_location['other']=['other']
+    #### issue ##############################################################
+    opts_issue = opts_df.groupby('location')['issue'].agg(['unique'])
+    opts_issue['unique'] = opts_issue['unique'].apply(lambda x: x.tolist())
+    opts_issue = opts_issue['unique'].to_dict()
+    if 'other' not in opts_issue:
+        opts_issue['other']=['other']
+    #### maintype ###########################################################
+    opts_maintype = opts_df['maintype']
+    opts_maintype =opts_maintype.unique().tolist()
+    if 'other' not in opts_maintype:
+        opts_maintype.append('other')
+
+    #### subtype ############################################################
+    opts_subtype = opts_df.groupby('maintype')['subtype'].agg(['unique'])
+    opts_subtype['unique'] = opts_subtype['unique'].apply(lambda x: x.tolist())
+    opts_subtype = opts_subtype['unique'].to_dict()
+    if 'other' not in opts_subtype:
+        opts_subtype['other']=['other']
+
+    ####################################################################
+    #### non-maintenance options ###################################
+    opts_df = st.session_state.opts_df
+    opts_df = opts_df[opts_df['subsubsubtype']!='maintenance']
+    # print (opts_df['subsubsubtype'])
+    opts_nonmain, opts_nonmain_sub,opts_nonmain_subsub={},{},{}
+    if len(opts_df)==0:
+        opts_nonmain['other']='other'
+        opts_nonmain_sub['other']='other'
+        opts_nonmain_subsub['other']='other'
+    else:
+        ####
+        opts_nonmain = opts_df.groupby('subsubsubtype')['area'].agg(['unique'])
+        opts_nonmain['unique'] = opts_nonmain['unique'].apply(lambda x: x.tolist())
+        opts_nonmain = opts_nonmain['unique'].to_dict()
+        if 'other' not in opts_nonmain:
+            opts_nonmain['other']=['other']
+        ####
+        opts_nonmain_sub = opts_df.groupby('subsubsubtype')['location'].agg(['unique'])
+        opts_nonmain_sub['unique'] = opts_nonmain_sub['unique'].apply(lambda x: x.tolist())
+        opts_nonmain_sub = opts_nonmain_sub['unique'].to_dict()
+        if 'other' not in opts_nonmain_sub:
+            opts_nonmain_sub['other']=['other']
+
+        for key in opts_nonmain_sub.keys():
+             temp_list = opts_nonmain_sub[key]
+             opts_nonmain_sub[key] = [value for value in temp_list if value != None]
+             print ([value for value in temp_list if value != "None"])
+
+        ####
+        opts_nonmain_subsub = opts_df.groupby('subsubsubtype')['issue'].agg(['unique'])
+        opts_nonmain_subsub['unique'] = opts_nonmain_subsub['unique'].apply(lambda x: x.tolist())
+        opts_nonmain_subsub = opts_nonmain_subsub['unique'].to_dict()
+        if 'other' not in opts_nonmain_subsub:
+            opts_nonmain_subsub['other']=['other']
+
+        for key in opts_nonmain_subsub.keys():
+             temp_list = opts_nonmain_subsub[key]
+             opts_nonmain_subsub[key] = [value for value in temp_list if value != None]
+        ####
+    return opts_related,opts_area, opts_location,opts_issue,opts_maintype,opts_subtype,opts_nonmain, opts_nonmain_sub,opts_nonmain_subsub
+
+
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+
+
 print ('-------------------------------------------new run-------------------------------------------------')
 #######basic setting######################################################################################
 # path_results = './results'
 ####### initialize global session state
-if "issue_list" not in st.session_state:
-    st.session_state.id_email = None
+if "issue_list" not in st.session_state or 'id_email' not in st.session_state:
+    st.session_state.id_email = 'other'
     st.session_state.text_email = None
     st.session_state.issue_list = []
     st.session_state.deletes = []
@@ -67,7 +296,13 @@ if "issue_list" not in st.session_state:
     st.session_state.key_nonmain_new=None
     st.session_state.key_nonmain_sub_new=None
     st.session_state.key_nonmain_subsub_new=None
+    #
+    st.session_state.key_street=''
+    st.session_state.key_suburb=''
+    st.session_state.key_state=''
+    st.session_state.key_post=''
 ####### database ############ nonmain,nonmain_sub,nonmain_subsub
+# print ('======================',st.session_state.is_maintenance)
 @st.cache_resource
 def sqlalchemy_engine():
     engine = create_engine('postgresql://postgres:UTS-DSI2020@piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com/pia')
@@ -81,7 +316,6 @@ st.markdown( """<style>section[data-testid="stSidebar"] {
             width: 800px !important; # Set the width to your desired value}</style> """, unsafe_allow_html=True, )
 st.markdown("""<style>div.stButton {text-align:center; color: blue;}</style>""", unsafe_allow_html=True)
 ########################################################################################################
-
 
 ##### login #######################################################################################
 # login authorization ###########
@@ -112,7 +346,6 @@ else:
     authenticator.logout('Logout')
 ###############################################################################################   
     def reset_maintenance_no():
-        # if st.session_state.is_maintenance == 'no':
         st.session_state.is_maintenance = 'other'
         st.session_state.key_area = 'other'
         st.session_state.key_location = 'other'
@@ -131,6 +364,12 @@ else:
         st.session_state.key_nonmain_new=None
         st.session_state.key_nonmain_sub_new=None
         st.session_state.key_nonmain_subsub_new=None
+        #
+        st.session_state.key_street=''
+        st.session_state.key_suburb=''
+        st.session_state.key_state=''
+        st.session_state.key_post=''
+        
     
     # reset_maintenance_no()   
     
@@ -151,11 +390,14 @@ else:
         elif st.session_state.bool_final_submit_sccuss == 0:
             st.sidebar.error("Your final submition is not saved! please report this to shuming.liang@uts.edu.au")
 
-    if st.session_state.bool_read_email == True:
-         st.session_state.load_email_time = time.time()
-         st.session_state.bool_read_email = False
-         st.session_state.text_email, st.session_state.id_email = read_email()
-         push_idemail_open(id_email=st.session_state.id_email,username=username)
+    if st.session_state.bool_read_email == True or st.session_state.id_email=='' or (username in ['ray','tony','leon','kevin'] and username!=st.session_state.id_email[:len(username)]):
+        st.session_state.load_email_time = time.time()
+        st.session_state.bool_read_email = False
+        if username in ['ray','tony','leon','kevin']:
+            st.session_state.text_email, st.session_state.id_email = read_email(username=username)
+        else:
+            st.session_state.text_email, st.session_state.id_email = read_email(username)    
+        push_idemail_open(id_email=st.session_state.id_email,username=username)
 
     text_email,id_email = st.session_state.text_email, st.session_state.id_email
     print (id_email)    
@@ -163,25 +405,28 @@ else:
     st.markdown(text_email)
     st.header(body='',divider='red' )
     st.header('End')
+
 ######## property address #############################################################################
+    # st.sidebar.subheader('',divider='red')
     st.sidebar.subheader('Peoperty Address')
     with st.sidebar:
-        adstreet = st.text_input(label='street',value ='other')
+        adstreet = st.text_input(label='street',key='key_street')
         if adstreet=='': adstreet="other"
         c1, c2, c3 = st.columns([0.4,0.4,0.2], gap='small') 
         with c1:
-            adsuburb = st.text_input(label='suburb')
+            adsuburb = st.text_input(label='suburb',key='key_suburb')
             if adsuburb=='': adsuburb="other"
         with c2:
-            adstate = st.text_input(label='state')
+            adstate = st.text_input(label='state',key='key_state')
             if adstate=='': adstate="other"
         with c3:
-            adpostcode = st.text_input(label='postcode')
+            adpostcode = st.text_input(label='postcode',key='key_post')
             
-            if adpostcode is '': 
+            if adpostcode == '': 
                 adpostcode="other"                
                 print ('ddddddddddddddddd',adpostcode)
     st.sidebar.subheader('',divider='red')
+    st.sidebar.subheader('Email Tagging')
     ads_list = [adstreet,adsuburb,adstate,adpostcode]
     address =""
     for i, ele in enumerate(ads_list):  
@@ -205,13 +450,12 @@ else:
         idx = opt.index('other')
         c1, c2 = st.sidebar.columns([0.6,0.4], gap='small') 
         with c1:
-            item = st.selectbox(label=label, options=opt, placeholder=phld, on_change = change_key, disabled=disable, key=key[0])  #index=idx,   
+            item = st.selectbox(label=label, options=opt, placeholder=phld, index=idx, on_change = change_key, disabled=disable, key=key[0])  #index=idx,   
             if st.session_state[key[0]] != "add a new option":
                 st.session_state[key[1]] = None         
         with c2:                
             disable_newopt = (item!="add a new option") or (disable)
-            new_option = st.text_input(label="Input your new keyword",label_visibility='visible', placeholder='Input your new keyword',
-                                        disabled = disable_newopt,key=key[1])              
+            new_option = st.text_input(label="Input your new keyword",label_visibility='visible', placeholder='Input your new keyword', disabled = disable_newopt,key=key[1])              
             if item=="add a new option":
                 if new_option!='':
                     item = new_option.lower()  
@@ -226,7 +470,7 @@ else:
         
         return item
     #### related is_maintenance ###############################################################
-    print (st.session_state.key_area)
+    print ('+++++++++++++',st.session_state.is_maintenance)
     is_maintenance = select_issues("what is the email related to?",opts_related,key=['is_maintenance','is_maintenance_new'])  
     disable = False
     if is_maintenance=='maintenance':
@@ -329,6 +573,7 @@ else:
     
     ######## showing issues###############################################
     # st.sidebar.divider()
+    # st.sidebar.subheader('',divider='orange')
     st.sidebar.subheader('list of matters',divider='orange')
     for i in range(len(st.session_state.issue_list)):
         c1, c2 = st.sidebar.columns([0.2,0.8], gap='small')    
