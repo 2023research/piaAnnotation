@@ -71,6 +71,16 @@ def pull_idemail_open():
 
 def read_email(sample=False,username='other'):
     @st.cache_data
+    def get_email_data_andy():
+        df = pd.read_csv('./data/andy.csv',sep=',')
+        idsallset = set(df["ID"].unique())
+        return df, idsallset
+    @st.cache_data
+    def get_email_data_jeffrey():
+        df = pd.read_csv('./data/jeffrey.csv',sep=',')
+        idsallset = set(df["ID"].unique())
+        return df, idsallset   
+    @st.cache_data
     def get_email_data_ray():
         df = pd.read_csv('./data/ray.csv',sep=',')
         idsallset = set(df["ID"].unique())
@@ -114,6 +124,10 @@ def read_email(sample=False,username='other'):
         df, idsallset = get_email_data_leon()
     elif username=='kevin':
         df, idsallset = get_email_data_kevin()
+    elif username=='andy':
+        df, idsallset = get_email_data_andy()
+    elif username=='jeffrey':
+        df, idsallset = get_email_data_jeffrey()
     elif username=='other':
         df, idsallset = get_email_data()
     df = df[['Body','ID']]
@@ -396,7 +410,7 @@ else:
     if st.session_state.bool_read_email == True or st.session_state.id_email=='' or (username in ['ray','tony','leon','kevin'] and username!=st.session_state.id_email[:len(username)]):
         st.session_state.load_email_time = time.time()
         st.session_state.bool_read_email = False
-        if username in ['ray','tony','leon','kevin']:
+        if username in ['ray','tony','leon','kevin','andy','jeffrey']:
             st.session_state.text_email, st.session_state.id_email = read_email(username=username)
         else:
             st.session_state.text_email, st.session_state.id_email = read_email(username)    
