@@ -407,7 +407,7 @@ else:
         elif st.session_state.bool_final_submit_sccuss == 0:
             st.sidebar.error("Your final submition is not saved! please report this to shuming.liang@uts.edu.au")
 
-    if st.session_state.bool_read_email == True or st.session_state.id_email=='' or (username in ['ray','tony','leon','kevin'] and username!=st.session_state.id_email[:len(username)]):
+    if st.session_state.bool_read_email == True or st.session_state.id_email=='' or (username in ['ray','tony','leon','kevin','andy','jeffrey'] and username!=st.session_state.id_email[:len(username)]):
         st.session_state.load_email_time = time.time()
         st.session_state.bool_read_email = False
         if username in ['ray','tony','leon','kevin','andy','jeffrey']:
