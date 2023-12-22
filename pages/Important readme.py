@@ -85,8 +85,8 @@ else:
 
     st.markdown("""
                 - For the email that does not have any meaning content (as show in the figure below): 
-                    - You do not need to do anything in the address and selection box BUT,
-                    - You must click 'Add matter' to add an 'other' issue to the list and clik 'final submit',
+                    - You do not need to do anything in the address and selection box,
+                    - **But you must** click 'Add matter' to add an 'other' issue to the list and clik 'final submit',
                     - otherwise, this email will be re-load in your next annoation until you final submit it.
                  """,unsafe_allow_html=True)
     col1, col2, col3 = st.columns([0.1,0.8,0.1])
