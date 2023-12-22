@@ -130,7 +130,8 @@ def read_email(sample=False,username='other'):
         df, idsallset = get_email_data_jeffrey()
     elif username=='other':
         df, idsallset = get_email_data()
-    df = df[['Body','ID']]
+    print ('@@@@@@@@@@@@@@@@@@@@@',df.columns)
+    # df = df[['Body','ID']]
     df['sort']=df.index
     idx_unlabled = idsallset.difference(ids_used)
     df_email = df.set_index('ID',drop=True)
@@ -140,11 +141,14 @@ def read_email(sample=False,username='other'):
     df_onerow = df_out.iloc[[0]]
     # idx_unlabled = list(idx_unlabled)
     # idx_unlabled.sort()
-    print ('@@@@@@@@@@@@@@@@@@@@@',df_out.shape)
+    print ('@@@@@@@@@@@@@@@@@@@@@',df_onerow.columns)
     # df_bool = df['ID'].apply(lambda x: x not in files)
     ## check special case
     # df_onerow = df_email[df_email.index=='a1_26109']
-    return df_onerow['Body'].values[0],df_onerow.index[0]            
+    # return df_onerow['Body'].values[0],df_onerow.index[0]            
+    text_email = f" * **From:** {df_onerow['From name'].values[0]} ({df_onerow['From address'].values[0]})\n* **To:** {df_onerow['To name'].values[0]} ({df_onerow['To address'].values[0]}) \n* **Subject:** {df_onerow['Subject'].values[0]}\n* **Content:** \n\n{df_onerow['Body'].values[0]}"
+    print ('@@@@@@@@@@@@@@@@@@@@@',text_email) 
+    return text_email,df_onerow.index[0]            
     
 
 #### slectbox options #####################################
