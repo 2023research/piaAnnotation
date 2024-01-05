@@ -244,9 +244,11 @@ def maintenance_options():
         opts_nonmain_subsub['other']='other'
     else:
         ####
+        
         opts_nonmain = opts_df.groupby('subsubsubtype')['area'].agg(['unique'])
         opts_nonmain['unique'] = opts_nonmain['unique'].apply(lambda x: x.tolist())
         opts_nonmain = opts_nonmain['unique'].to_dict()
+        # print ('=============:',opts_nonmain)
         if 'other' not in opts_nonmain:
             opts_nonmain['other']=['other']
         ####
@@ -464,7 +466,8 @@ else:
     def select_issues(label='0',opt=['0','1'], phld="", disable=False,key=['0','1']):
         def change_key():
             pass
-        opt = [value for value in opt if value != "other"]        
+        opt = [value for value in opt if value != "other"] 
+        opt = [value for value in opt if value != None]        
         opt.sort()
         opt.append('other')  
         opt.append('add a new option') 
