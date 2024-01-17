@@ -70,39 +70,10 @@ def pull_idemail_open():
     return ids
 
 def read_email(sample=False,username='other'):
-    @st.cache_data
-    def get_email_data_andy():
-        df = pd.read_csv('./data/andy.csv',sep=',')
-        idsallset = set(df["ID"].unique())
-        return df, idsallset
-    @st.cache_data
-    def get_email_data_jeffrey():
-        df = pd.read_csv('./data/jeffrey.csv',sep=',')
-        idsallset = set(df["ID"].unique())
-        return df, idsallset   
-    @st.cache_data
-    def get_email_data_ray():
-        df = pd.read_csv('./data/ray.csv',sep=',')
-        idsallset = set(df["ID"].unique())
-        return df, idsallset
-    @st.cache_data
-    def get_email_data_tony():
-        df = pd.read_csv('./data/tony.csv',sep=',')
-        idsallset = set(df["ID"].unique())
-        return df, idsallset    
-    @st.cache_data
-    def get_email_data_leon():
-        df = pd.read_csv('./data/leon.csv',sep=',')
-        idsallset = set(df["ID"].unique())
-        return df, idsallset  
-    @st.cache_data
-    def get_email_data_kevin():
-        df = pd.read_csv('./data/kevin.csv',sep=',')
-        idsallset = set(df["ID"].unique())
-        return df, idsallset
+    
     @st.cache_data
     def get_email_data():
-        df = pd.read_csv('./data/test_pos_wlTFLR_key_6k.csv',sep=',')
+        df = pd.read_csv('./data/test_pos_wlTFLR_key_20ksamples4annotation.csv',sep=',')
         idsallset = set(df["ID"].unique())
         return df, idsallset
     ####
@@ -116,38 +87,40 @@ def read_email(sample=False,username='other'):
     print("--- %s pd seconds ---" % (time.time() - start_time))
 
     
-    if username=='ray':
-        df, idsallset = get_email_data_ray()
-    elif username=='tony':
-        df, idsallset = get_email_data_tony()
-    elif username=='leon':   
-        df, idsallset = get_email_data_leon()
-    elif username=='kevin':
-        df, idsallset = get_email_data_kevin()
-    elif username=='andy':
-        df, idsallset = get_email_data_andy()
-    elif username=='jeffrey':
-        df, idsallset = get_email_data_jeffrey()
-    elif username=='other':
-        df, idsallset = get_email_data()
-    print ('@@@@@@@@@@@@@@@@@@@@@',df.columns)
+    # if username=='ray':
+    #     df, idsallset = get_email_data_ray()
+    # elif username=='tony':
+    #     df, idsallset = get_email_data_tony()
+    # elif username=='leon':   
+    #     df, idsallset = get_email_data_leon()
+    # elif username=='kevin':
+    #     df, idsallset = get_email_data_kevin()
+    # elif username=='andy':
+    #     df, idsallset = get_email_data_andy()
+    # elif username=='jeffrey':
+    #     df, idsallset = get_email_data_jeffrey()
+    # elif username=='other':
+    df, idsallset = get_email_data()
+    print ('@@@@@@@@@@@@@@@@@@@@@ total un-annotated emails:',df.shape,df.columns)
     # df = df[['Body','ID']]
     df['sort']=df.index
     idx_unlabled = idsallset.difference(ids_used)
     df_email = df.set_index('ID',drop=True)
     df_out = df_email.loc[list(idx_unlabled)]
-    df_out.sort_values(by='sort',inplace=True)
-    # df_onerow = df_out.sample(1)
-    df_onerow = df_out.iloc[[0]]
+    # df_out.sort_values(by='sort',inplace=True)
+    df_onerow = df_out.sample(1)
+    # df_onerow = df_out.iloc[[0]]
+    # print ('####',df_onerow)
+    # print ('####',df_out.iloc[[0]])
     # idx_unlabled = list(idx_unlabled)
     # idx_unlabled.sort()
-    print ('@@@@@@@@@@@@@@@@@@@@@',df_onerow.columns)
+    # print ('@@@@@@@@@@@@@@@@@@@@@',df_onerow.columns)
     # df_bool = df['ID'].apply(lambda x: x not in files)
     ## check special case
     # df_onerow = df_email[df_email.index=='a1_26109']
     # return df_onerow['Body'].values[0],df_onerow.index[0]            
     text_email = f" * **From:** {df_onerow['From name'].values[0]} ({df_onerow['From address'].values[0]})\n* **To:** {df_onerow['To name'].values[0]} ({df_onerow['To address'].values[0]}) \n* **Subject:** {df_onerow['Subject'].values[0]}\n* **Content:** \n\n{df_onerow['Body'].values[0]}"
-    print ('@@@@@@@@@@@@@@@@@@@@@',text_email) 
+    # print ('@@@@@@@@@@@@@@@@@@@@@',text_email) 
     return text_email,df_onerow.index[0]            
     
 
@@ -345,6 +318,7 @@ st.markdown("""<style>div.stButton {text-align:center; color: blue;}</style>""",
 # usernames = ['john','james','oliver','david','emma','alex']shuming 8768, xiaohan:6323,michael:3232
 #Kevin:8963, Andy:2836, Leon:4936, Ray:3232, Jeffrey:6323, Tony:8768
 # passwords = ['8963','2836', '4936','3232','6323','8768']
+# 'PM1': 3201, 'PM10': 1533, 'PM11': 8411, 'PM12': 8775, 'PM13': 5243, 'PM14': 2750, 'PM15': 4423, 'PM16': 6923, 'PM17': 9552, 'PM18': 3969, 'PM19': 1708, 'PM2': 1926, 'PM3': 4898, 'PM4': 4867, 'PM5': 5185, 'PM6': 2320, 'PM7': 6305, 'PM8': 4714, 'PM9': 8585, 'andy': 2836, 'jeffrey': 6323, 'kevin': 8963, 'leon': 4936, 'michael': 3232, 'ray': 3232, 'shuming': 8768, 'tony': 8768, 'xiaohan': 6323
 
 # hashed_passwords = stauth.Hasher(['8963','2836', '4936','3232','6323','8768']).generate()
 # print (hashed_passwords)
@@ -413,13 +387,13 @@ else:
         elif st.session_state.bool_final_submit_sccuss == 0:
             st.sidebar.error("Your final submition is not saved! please report this to shuming.liang@uts.edu.au")
 
-    if st.session_state.bool_read_email == True or st.session_state.id_email=='' or (username in ['ray','tony','leon','kevin','andy','jeffrey'] and username!=st.session_state.id_email[:len(username)]):
+    if st.session_state.bool_read_email == True or st.session_state.id_email=='':
         st.session_state.load_email_time = time.time()
         st.session_state.bool_read_email = False
-        if username in ['ray','tony','leon','kevin','andy','jeffrey']:
-            st.session_state.text_email, st.session_state.id_email = read_email(username=username)
-        else:
-            st.session_state.text_email, st.session_state.id_email = read_email(username)    
+        # if username in ['ray','tony','leon','kevin','andy','jeffrey']:
+        #     st.session_state.text_email, st.session_state.id_email = read_email(username=username)
+        # else:
+        st.session_state.text_email, st.session_state.id_email = read_email()    
         push_idemail_open(id_email=st.session_state.id_email,username=username)
 
     text_email,id_email = st.session_state.text_email, st.session_state.id_email
@@ -430,33 +404,34 @@ else:
     st.header('End')
 
 ######## property address #############################################################################
-    # st.sidebar.subheader('',divider='red')
-    st.sidebar.subheader('Peoperty Address')
-    with st.sidebar:
-        adstreet = st.text_input(label='street',key='key_street')
-        if adstreet=='': adstreet="other"
-        c1, c2, c3 = st.columns([0.4,0.4,0.2], gap='small') 
-        with c1:
-            adsuburb = st.text_input(label='suburb',key='key_suburb')
-            if adsuburb=='': adsuburb="other"
-        with c2:
-            adstate = st.text_input(label='state',key='key_state')
-            if adstate=='': adstate="other"
-        with c3:
-            adpostcode = st.text_input(label='postcode',key='key_post')
+    # # st.sidebar.subheader('',divider='red')
+    # st.sidebar.subheader('Peoperty Address')
+    # with st.sidebar:
+    #     adstreet = st.text_input(label='street',key='key_street')
+    #     if adstreet=='': adstreet="other"
+    #     c1, c2, c3 = st.columns([0.4,0.4,0.2], gap='small') 
+    #     with c1:
+    #         adsuburb = st.text_input(label='suburb',key='key_suburb')
+    #         if adsuburb=='': adsuburb="other"
+    #     with c2:
+    #         adstate = st.text_input(label='state',key='key_state')
+    #         if adstate=='': adstate="other"
+    #     with c3:
+    #         adpostcode = st.text_input(label='postcode',key='key_post')
             
-            if adpostcode == '': 
-                adpostcode="other"                
-                print ('ddddddddddddddddd',adpostcode)
-    st.sidebar.subheader('',divider='red')
-    st.sidebar.subheader('Email Tagging')
-    ads_list = [adstreet,adsuburb,adstate,adpostcode]
-    address =""
-    for i, ele in enumerate(ads_list):  
-        if i<len(ads_list)-1:
-            address=address+ele+'|' #if ele !=None else address+'None|'
-        elif ele !='':
-            address=address+ele # if ele !=None else issue_str+'None'
+    #         if adpostcode == '': 
+    #             adpostcode="other"                
+    #             print ('ddddddddddddddddd',adpostcode)
+    # st.sidebar.subheader('',divider='red')
+    # st.sidebar.subheader('Email Tagging')
+    # ads_list = [adstreet,adsuburb,adstate,adpostcode]
+    # address =""
+    # for i, ele in enumerate(ads_list):  
+    #     if i<len(ads_list)-1:
+    #         address=address+ele+'|' #if ele !=None else address+'None|'
+    #     elif ele !='':
+    #         address=address+ele # if ele !=None else issue_str+'None'
+    address ="other|APInotopen"
     print ('########',address)
 #### slectbox options ##########################################################################################
     opts_related,opts_area, opts_location,opts_issue,opts_maintype,opts_subtype,opts_nonmain, opts_nonmain_sub,opts_nonmain_subsub = maintenance_options()    
@@ -471,6 +446,11 @@ else:
         opt.sort()
         opt.append('other')  
         opt.append('add a new option') 
+
+        if key[0]=='is_maintenance':
+            opt = [value for value in opt if value != "maintenance"]
+            opt = ['maintenance']+opt
+
         idx = opt.index('other')
         c1, c2 = st.sidebar.columns([0.6,0.4], gap='small') 
         with c1:

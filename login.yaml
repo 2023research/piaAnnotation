@@ -1,0 +1,149 @@
+cookie:
+  expiry_days: 30
+  key: some_signature_key
+  name: some_cookie_name
+credentials:
+  usernames:
+    PM1:
+      email: sample
+      name: PM1
+      password: $2b$12$p./w05UaLNUscui/wvzvo.gNcaPwCBipi2.OZon2SkiN8D4oKoC9S
+      realpassword: 3201
+    PM10:
+      email: sample
+      name: PM10
+      password: $2b$12$xcdV22c3hQpj1MahHx4KBOeKZ10qkQtZbIG7I3/QGjt3KjxFc8Eo2
+      realpassword: 1533
+    PM11:
+      email: sample
+      name: PM11
+      password: $2b$12$aJEgCUgOqzI0Cxr5aTlpJOFo3PP1YSlsj6rz2wH1m8FaFbH4cZw82
+      realpassword: 8411
+    PM12:
+      email: sample
+      name: PM12
+      password: $2b$12$AiXzqOqKb8P1MzvaRNIGHudiK32vUub5vi4pjHHdLAwqUFQFdJSsC
+      realpassword: 8775
+    PM13:
+      email: sample
+      name: PM13
+      password: $2b$12$I59e5p8xoDVropXuuA/A0.e14E40hjxkqH0X7pLe6F.lKDyT0oP2G
+      realpassword: 5243
+    PM14:
+      email: sample
+      name: PM14
+      password: $2b$12$9kFzIL/EB6QiCTFco.GThOa8lbxIlj7i2kfitQdmZ3tdEHsQXFpCC
+      realpassword: 2750
+    PM15:
+      email: sample
+      name: PM15
+      password: $2b$12$Fsy3xDu.Uw8pGX9bU.tWkOcGmorxLzFKqbO5UwiTy0A/2819utmGC
+      realpassword: 4423
+    PM16:
+      email: sample
+      name: PM16
+      password: $2b$12$BfIWOAlfmZQ/fraZT0gHy..oAs3Hwb3aVrx6sM27s8Z4Pr3v2mxg6
+      realpassword: 6923
+    PM17:
+      email: sample
+      name: PM17
+      password: $2b$12$pmUUWeLv4yIGUrKEavcssO3m2id/lKJXNB2XkZwm221gjBC7gPy4O
+      realpassword: 9552
+    PM18:
+      email: sample
+      name: PM18
+      password: $2b$12$tZJldn6jgB2I5YHydy2G6.HYH45Vgac4utJQ9Ph/DsqT3d6/TVr8a
+      realpassword: 3969
+    PM19:
+      email: sample
+      name: PM19
+      password: $2b$12$Y9NAt0/xbuKnlhA/UtlyoOV4Ju51LnDk7w5ch4ok4wFlTPSiklmwG
+      realpassword: 1708
+    PM2:
+      email: sample
+      name: PM2
+      password: $2b$12$vLxqqzyPXBneK0yf8OaeHu5XpImYWj8q2swlhB2/0VpcpAaFyQXFy
+      realpassword: 1926
+    PM3:
+      email: sample
+      name: PM3
+      password: $2b$12$O5KTbDv5.3avacWHGFGslOeSmux3D/d0hDQgt36hrvftqLyx.KuR.
+      realpassword: 4898
+    PM4:
+      email: sample
+      name: PM4
+      password: $2b$12$Blum1KtxGmcB3Cu2fw00d.GOgjw.30zPx0/YlLvuZyFXNRjxajHDK
+      realpassword: 4867
+    PM5:
+      email: sample
+      name: PM5
+      password: $2b$12$k7LHesmb5ZFoisM7.8vBAO11jPEyLRlZOwZ7b6VnC/yCGdczUbxCu
+      realpassword: 5185
+    PM6:
+      email: sample
+      name: PM6
+      password: $2b$12$FcFB0Pdk0xZWh/EL89NnHufAVDlhnJxAsvuWNwaQZvgnN5Cuk8w4q
+      realpassword: 2320
+    PM7:
+      email: sample
+      name: PM7
+      password: $2b$12$qtlsXYeNu5QvwwCUR6dqGuHOZyrmu1cBe5vND8e7NrL6O/dE189Yi
+      realpassword: 6305
+    PM8:
+      email: sample
+      name: PM8
+      password: $2b$12$lX.xAK/1xfzeydevkEOoDeh1bzrqCJoTslmWon3Z0axHPrdfVtI.K
+      realpassword: 4714
+    PM9:
+      email: sample
+      name: PM9
+      password: $2b$12$2UdImDZLamXrkCGIl5unmOIdfnoJVx2wjP91yix/hkmFwLOeuERw6
+      realpassword: 8585
+    andy:
+      email: rbriggs@gmail.com
+      name: andy
+      password: $2b$12$Ypwx7V3nN5GOekB2aPu4.OK7G5k1ipN9IcJ6qhL.39neMQISnwx12
+      realpassword: 2836
+    jeffrey:
+      email: rbriggs@gmail.com
+      name: jeffrey
+      password: $2b$12$pljOwNCFTEYyY1ZdRE9RPO1fD41fyDiMLj7cBgIL2mvNzz9RpKyT6
+      realpassword: 6323
+    kevin:
+      email: jsmith@gmail.com
+      name: kevin
+      password: $2b$12$Ah0PkNoUWA5fbjRsTa8fxO4tqNyl.Of6jY4rBIjcwKBkGo6MpfxH2
+      realpassword: 8963
+    leon:
+      email: rbriggs@gmail.com
+      name: leon
+      password: $2b$12$KewxCDJ4ULRViJM0cdW6Zu8DOixgOlqx8sr.pLvzpkEG.6dDr5z/S
+      realpassword: 4936
+    michael:
+      email: rbriggs@gmail.com
+      name: michael
+      password: $2b$12$uOPJt3ixEn1PBhprZK9D0un3r2nvwKykUhL4UE8IQfGUt9e/ZrXsu
+      realpassword: 3232
+    ray:
+      email: rbriggs@gmail.com
+      name: ray
+      password: $2b$12$uOPJt3ixEn1PBhprZK9D0un3r2nvwKykUhL4UE8IQfGUt9e/ZrXsu
+      realpassword: 3232
+    shuming:
+      email: jsmith@gmail.com
+      name: shuming
+      password: $2b$12$JHAZepA1yh53O4Oob8b1.e67MpP5iFNWQhCYJDkMPUjydRCGYRzce
+      realpassword: 8768
+    tony:
+      email: rbriggs@gmail.com
+      name: tony
+      password: $2b$12$JHAZepA1yh53O4Oob8b1.e67MpP5iFNWQhCYJDkMPUjydRCGYRzce
+      realpassword: 8768
+    xiaohan:
+      email: rbriggs@gmail.com
+      name: xiaohan
+      password: $2b$12$pljOwNCFTEYyY1ZdRE9RPO1fD41fyDiMLj7cBgIL2mvNzz9RpKyT6
+      realpassword: 6323
+preauthorized:
+  emails:
+  - melsby@gmail.com
