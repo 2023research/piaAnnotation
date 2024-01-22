@@ -1,0 +1,7 @@
+username,mean timeuse(s),num of annotated emails,num of annotated emails (maintenance),mean timeuse(s) on maintenance email,maintenance percentage,counts of top 4 categories
+andy,13.0,255,61.0,17.0,0.23921568627450981,"{'tenancy related': 106, 'maintenance': 61, 'strata': 27, 'account': 22}"
+jeffrey,24.0,142,19.0,40.0,0.13380281690140844,"{'tenancy related': 96, 'maintenance': 19, 'inspection': 7, 'account': 4}"
+kevin,50.0,162,137.0,54.0,0.845679012345679,"{'maintenance': 137, 'duplicate email': 9, 'other': 8, 'strata': 3}"
+leon,23.0,129,8.0,59.0,0.06201550387596899,"{'tenancy related': 80, 'advertisement': 34, 'maintenance': 8, 'mail delivery failed': 5}"
+ray,20.0,224,,,,"{'strata': 187, 'tenancy related': 19, 'advertisement': 13, 'mail delivery failed': 3}"
+tony,20.0,207,,,,"{'strata': 115, 'account': 62, 'other': 12, 'portfolia management': 5}"
