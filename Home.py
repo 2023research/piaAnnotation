@@ -437,40 +437,40 @@ else:
     opts_related,opts_area, opts_location,opts_issue,opts_maintype,opts_subtype,opts_nonmain, opts_nonmain_sub,opts_nonmain_subsub = maintenance_options()    
 
 ###### maintenance selection box ################################################################################ 
-    def select_issues_1column(label='0',opt=['0','1'], phld="", disable=False,key=['0','1']):
-        def change_key():
-            pass
-        opt = [value for value in opt if value != "other"] 
-        opt = [value for value in opt if value != None]        
-        opt.sort()
-        opt.append('other')  
+    # def select_issues_1column(label='0',opt=['0','1'], phld="", disable=False,key=['0','1']):
+    #     def change_key():
+    #         pass
+    #     opt = [value for value in opt if value != "other"] 
+    #     opt = [value for value in opt if value != None]        
+    #     opt.sort()
+    #     opt.append('other')  
 
-        # if key[0]=='is_maintenance':
-        #     opt = [value for value in opt if value != "maintenance"]
-        #     opt = ['maintenance']+opt
-        print ('############:',opt)
-        idx = opt.index('other')
-        c1, c2 = st.sidebar.columns([0.6,0.4], gap='small') 
-        with c1:
-            item = st.selectbox(label=label, options=opt, placeholder=phld, index=idx, on_change = change_key, disabled=disable, key=key[0])  #index=idx,   
-            if st.session_state[key[0]] != "add a new option":
-                st.session_state[key[1]] = None         
-        with c2:                
-            disable_newopt = (item!="add a new option") or (disable)
-            new_option = ''# st.text_input(label="Input your new keyword",label_visibility='visible', placeholder='Input your new keyword', disabled = disable_newopt,key=key[1])              
-            if item=="add a new option":
-                if new_option!='':
-                    item = new_option.lower()  
-                    if new_option in opt or new_option[:-1] in opt:
-                        # st.session_state[key[0]] = new_option
-                        # item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, disabled=disable, key=key[0]) 
-                        st.warning(f"Your new option '{new_option}' has been existed in the left selectbox.")
-                    else:                        
-                        st.session_state.newopts[label]=item
-                else:
-                    item = 'other'                    
+    #     # if key[0]=='is_maintenance':
+    #     #     opt = [value for value in opt if value != "maintenance"]
+    #     #     opt = ['maintenance']+opt
+    #     print ('############:',opt)
+    #     idx = opt.index('other')
+    #     c1, c2 = st.sidebar.columns([0.6,0.4], gap='small') 
+    #     with c1:
+    #         item = st.selectbox(label=label, options=opt, placeholder=phld, index=idx, on_change = change_key, disabled=disable, key=key[0])  #index=idx,   
+    #         if st.session_state[key[0]] != "add a new option":
+    #             st.session_state[key[1]] = None         
+    #     with c2:                
+    #         disable_newopt = (item!="add a new option") or (disable)
+    #         new_option = ''# st.text_input(label="Input your new keyword",label_visibility='visible', placeholder='Input your new keyword', disabled = disable_newopt,key=key[1])              
+    #         if item=="add a new option":
+    #             if new_option!='':
+    #                 item = new_option.lower()  
+    #                 if new_option in opt or new_option[:-1] in opt:
+    #                     # st.session_state[key[0]] = new_option
+    #                     # item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, disabled=disable, key=key[0]) 
+    #                     st.warning(f"Your new option '{new_option}' has been existed in the left selectbox.")
+    #                 else:                        
+    #                     st.session_state.newopts[label]=item
+    #             else:
+    #                 item = 'other'                    
         
-        return item
+    #     return item
 
     def select_issues(label='0',opt=['0','1'], phld="", disable=False,key=['0','1']):
         def change_key():
@@ -494,7 +494,10 @@ else:
                 st.session_state[key[1]] = None         
         with c2:                
             disable_newopt = (item!="add a new option") or (disable)
-            new_option = st.text_input(label="Input your new keyword",label_visibility='visible', placeholder='Input your new keyword', disabled = disable_newopt,key=key[1])              
+            if key[0]=='is_maintenance':
+                new_option = ''
+            else:
+                new_option = st.text_input(label="Input your new keyword",label_visibility='visible', placeholder='Input your new keyword', disabled = disable_newopt,key=key[1])              
             if item=="add a new option":
                 if new_option!='':
                     item = new_option.lower()  
@@ -511,8 +514,8 @@ else:
     #### related is_maintenance ###############################################################
     print ('+++++++++++++',st.session_state.is_maintenance)
     
-    opts_related = ['strata','maintenance','account','leasing','inspection','portfolia management','rent review']
-    is_maintenance = select_issues_1column("what is the email related to?",opts_related,key=['is_maintenance','is_maintenance_new'])  
+    opts_related = ['strata','maintenance','account','leasing','inspection','portfolia management','rent review','complaints','NCAT','property sales']
+    is_maintenance = select_issues("what is the email related to?",opts_related,key=['is_maintenance','is_maintenance_new'])  
     disable = False
     if is_maintenance=='maintenance':
         ###################################################################
