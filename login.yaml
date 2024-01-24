@@ -99,16 +99,56 @@ credentials:
       name: PM9
       password: $2b$12$2UdImDZLamXrkCGIl5unmOIdfnoJVx2wjP91yix/hkmFwLOeuERw6
       realpassword: 8585
+    alexchiu:
+      email: sample
+      name: alexchiu
+      password: $2b$12$3YQEZ5CbWQ7.4eQfTRgkXe0m.325ax7ASkLVV1DXUUZ19kdAlylKq
+      realpassword: 2931
     andy:
       email: rbriggs@gmail.com
       name: andy
       password: $2b$12$Ypwx7V3nN5GOekB2aPu4.OK7G5k1ipN9IcJ6qhL.39neMQISnwx12
       realpassword: 2836
+    brian:
+      email: sample
+      name: brian
+      password: $2b$12$vNZyKecRRitog1tgPSOnyuBmisPNaFOUKFUCrjGam8do9OqhgnxYu
+      realpassword: 4439
+    henry:
+      email: sample
+      name: henry
+      password: $2b$12$gwqc60ZxkRVD64LtfbpM7ucEPLTT8Xv2WoIL2lHW7PjeSv6v6emG2
+      realpassword: 8737
+    isabella:
+      email: sample
+      name: isabella
+      password: $2b$12$.ADZamFfqJSReUK.G9nZjeWcb3BdlgXKB95G1cWmEml6n5ER9AWHq
+      realpassword: 8993
+    jason:
+      email: sample
+      name: jason
+      password: $2b$12$L50R.4cuVDBPqIg.xd3mweBV7ZG9TUvSdZFWw4zGaxZyDdNN/GcEy
+      realpassword: 2537
+    jay:
+      email: sample
+      name: jay
+      password: $2b$12$7/s4cB8Uz49iBKhfVDMbYOsVSZMOJeF5RXDJS1KGkT7tIwRgczsIi
+      realpassword: 8297
     jeffrey:
       email: rbriggs@gmail.com
       name: jeffrey
       password: $2b$12$pljOwNCFTEYyY1ZdRE9RPO1fD41fyDiMLj7cBgIL2mvNzz9RpKyT6
       realpassword: 6323
+    jesse:
+      email: sample
+      name: jesse
+      password: $2b$12$Z1Bqed.7yt4g2Jq8fy59iuy7anqn.7Fg7TgqR9DkYdqLiBmlPqa.6
+      realpassword: 1034
+    kel:
+      email: sample
+      name: kel
+      password: $2b$12$HtbFs9a8iq5pC9QFwhgfp.dd1N0znS7AEeSBEVLwze4eYyyuqI6/.
+      realpassword: 9117
     kevin:
       email: jsmith@gmail.com
       name: kevin
@@ -119,31 +159,76 @@ credentials:
       name: leon
       password: $2b$12$KewxCDJ4ULRViJM0cdW6Zu8DOixgOlqx8sr.pLvzpkEG.6dDr5z/S
       realpassword: 4936
+    martin:
+      email: sample
+      name: martin
+      password: $2b$12$0tu4qneDGWqVlQNVK6g7Ie8tljx/UXkhPId7.N2S122wo1bB3YVXa
+      realpassword: 1464
+    massimo:
+      email: sample
+      name: massimo
+      password: $2b$12$kQufdXZBNINT.Xlci80vMuoyhp1unqYZqSG/GHp1HdQyZIjqs9KtS
+      realpassword: 2033
+    melvin:
+      email: sample
+      name: melvin
+      password: $2b$12$/kuma0C5mwmX/bc70cSg2emT8aLtEnZSllmetjDZl7gPMZyAbWLXe
+      realpassword: 5363
     michael:
       email: rbriggs@gmail.com
       name: michael
       password: $2b$12$uOPJt3ixEn1PBhprZK9D0un3r2nvwKykUhL4UE8IQfGUt9e/ZrXsu
       realpassword: 3232
+    michaellee:
+      email: sample
+      name: michaellee
+      password: $2b$12$2FkaIfm2PjXKMJcVQyXr/.ZLXD2yPoJ6FL/FmXz/lMrrD7IYvm9KG
+      realpassword: 8364
+    rain:
+      email: sample
+      name: rain
+      password: $2b$12$eb8hSxsvxSH1e4ngfBJg2.BusX4lU0pOifkdatzqLgeDLBKzI6ok6
+      realpassword: 7386
     ray:
       email: rbriggs@gmail.com
       name: ray
       password: $2b$12$uOPJt3ixEn1PBhprZK9D0un3r2nvwKykUhL4UE8IQfGUt9e/ZrXsu
       realpassword: 3232
+    reina:
+      email: sample
+      name: reina
+      password: $2b$12$/KZEag.f7cXnphIp96GrgOamyBlJBQJuUQULV50vL7MvIlwRPfUKK
+      realpassword: 5179
     shuming:
       email: jsmith@gmail.com
       name: shuming
       password: $2b$12$JHAZepA1yh53O4Oob8b1.e67MpP5iFNWQhCYJDkMPUjydRCGYRzce
       realpassword: 8768
+    stephen:
+      email: sample
+      name: stephen
+      password: $2b$12$cjyBmYA5aFfvFKIAhw137u.Ao3bLCeWAAy/8duiAsUb3ZRSj6KHie
+      realpassword: 8090
     tony:
       email: rbriggs@gmail.com
       name: tony
       password: $2b$12$JHAZepA1yh53O4Oob8b1.e67MpP5iFNWQhCYJDkMPUjydRCGYRzce
       realpassword: 8768
+    winkie:
+      email: sample
+      name: winkie
+      password: $2b$12$QU7N2XB8URPenY.imBq7juiQ.hwWND1Eu8lNK4.EV/jlTUCHktNzS
+      realpassword: 3201
     xiaohan:
       email: rbriggs@gmail.com
       name: xiaohan
       password: $2b$12$pljOwNCFTEYyY1ZdRE9RPO1fD41fyDiMLj7cBgIL2mvNzz9RpKyT6
       realpassword: 6323
+    yolanda:
+      email: sample
+      name: yolanda
+      password: $2b$12$ZRXnE5dUBI8/i.IOBeDegen/JqWV2kzFSyvF4WE6MqxUJRhbRWuya
+      realpassword: 7219
 preauthorized:
   emails:
   - melsby@gmail.com

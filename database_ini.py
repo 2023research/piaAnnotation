@@ -122,6 +122,42 @@ if False:
         print (pw)
     print (dict_tmp)  
 # 'PM1': 3201, 'PM10': 1533, 'PM11': 8411, 'PM12': 8775, 'PM13': 5243, 'PM14': 2750, 'PM15': 4423, 'PM16': 6923, 'PM17': 9552, 'PM18': 3969, 'PM19': 1708, 'PM2': 1926, 'PM3': 4898, 'PM4': 4867, 'PM5': 5185, 'PM6': 2320, 'PM7': 6305, 'PM8': 4714, 'PM9': 8585, 'andy': 2836, 'jeffrey': 6323, 'kevin': 8963, 'leon': 4936, 'michael': 3232, 'ray': 3232, 'shuming': 8768, 'tony': 8768, 'xiaohan': 6323
+# login ini PM name#########
+if True:
+    import yaml
+    import random
+    import streamlit_authenticator as stauth
+    f_name = "login.yaml"
+    with open(f_name) as f:
+        list_doc = yaml.safe_load(f)
+    # print (list_doc['credentials']['usernames'])
+    pms = ['winkie','massimo','reina','alexchiu','kel','michaellee','henry','yolanda','brian','jason','isabella','martin','rain','stephen','jesse','jay','melvin']
+    random.seed(1)
+    for name in pms:
+        # name = 'PM'+str(num)
+        pw = random.randint(1000, 9999)
+        hashed_passwords = stauth.Hasher([str(pw)]).generate()[0]
+        print (name,pw,hashed_passwords)
+        # print (list_doc['credentials']['usernames'])
+        list_doc['credentials']['usernames'][name]={'email':'sample','name':name,'realpassword':pw,'password':hashed_passwords}   
+
+    with open(f_name, "w") as f:
+        yaml.dump(list_doc, f)
+    # print for zelin
+    pms_print = ['kevin','winkie','tony','massimo','reina','alexchiu','andy','kel','michaellee','henry','jeffrey','yolanda','brian','jason','leon','isabella','martin','rain','ray','stephen','jesse','jay','melvin']
+    with open(f_name) as f:
+        list_doc = yaml.safe_load(f)
+    users = list_doc['credentials']['usernames'].keys()
+    print (users)
+    dict_tmp = {}
+    for user in users:
+        if user in pms_print:
+            pw = list_doc['credentials']['usernames'][user]['realpassword']
+            dict_tmp[user] = pw
+            # print (user,':',pw)
+    for user in pms_print:
+        print (user,':',dict_tmp[user])
+    print (dict_tmp) 
 ###########################################
 #  # st method#################################
 # start_time = time.time()
