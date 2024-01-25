@@ -15,7 +15,7 @@
 # http://13.211.130.199:8501/ 
 # python -m streamlit run Home.py
 from urllib.error import URLError
-import os, psycopg2, time
+import os, psycopg2, time,datetime
 import pandas as pd
 import streamlit as st
 import streamlit_authenticator as stauth
@@ -48,6 +48,20 @@ def pull_idemail_labeled():
     if len(ids)==0:
         ids=['temp']
     return ids
+def pull_labeled_number():
+    cur = connect_db().cursor()
+    cur.execute('select * from email.labels')  
+
+    df = pd.DataFrame(cur.fetchall())
+    df.columns = [ x.name for x in cur.description ]
+    df = df[df['timeuse'].notnull()]
+
+    tstr = "25 Jan 2024 1:50:28"
+    tstr = time.strptime(tstr, "%d %b %Y %H:%M:%S")
+    df['datesubmit'] = df['timesubmit'].astype('float')
+    df_period = df[df['datesubmit']>time.mktime(tstr)]  
+
+    return df_period.shape[0]
 def push_idemail_open(id_email=None,username=None):
     cur = connect_db().cursor()
     sql = f"""INSERT INTO email.openedids (timeopened, idemail, username) VALUES ('{str(time.time())}','{id_email}', '{username}')"""       
@@ -77,6 +91,9 @@ def read_email(sample=False,username='other'):
         idsallset = set(df["ID"].unique())
         return df, idsallset
     ####
+    st.session_state.number_labeled = pull_labeled_number()
+    print ('st.session_state.number_labeled',st.session_state.number_labeled)
+
     start_time = time.time()
     idslabeled = pull_idemail_labeled()
     # print ('idslabeled',idslabeled)
@@ -260,6 +277,7 @@ print ('-------------------------------------------new run----------------------
 # path_results = './results'
 ####### initialize global session state
 if "issue_list" not in st.session_state or 'id_email' not in st.session_state or 'is_maintenance' not in st.session_state:
+    st.session_state.number_labeled = 0
     st.session_state.id_email = 'other'
     st.session_state.text_email = None
     st.session_state.issue_list = []
@@ -338,7 +356,9 @@ if authenticator_status==False:
     st.error('username/password is incorrect')
 elif authenticator_status==None:
     st.warning("please enter your username and password")
-else: 
+elif st.session_state.number_labeled>9888: # check how many labeled emails
+    st.header(f'Congratulations! The annotation task has been completed.', divider='red')
+else:
     st.markdown(f"<h2 style='text-align: center; color: red;'>Welcome {username}!</h2>", unsafe_allow_html=True)
     authenticator.logout('Logout')
 ###############################################################################################   
@@ -521,7 +541,8 @@ else:
         ###################################################################
         #### area ####
         print (st.session_state.key_area)
-        area = select_issues("which area has issue?",opts_area,disable=disable,key=['key_area','key_area_new'])  
+        area = select_issues("which area has issue?",opts_area,disable=disable,key=['key_area','key_area_new']) 
+        # print (opts_area) 
         ################################################################### 
         #### location ####
         if area not in opts_location.keys():
