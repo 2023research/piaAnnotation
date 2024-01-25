@@ -17,6 +17,7 @@
 from urllib.error import URLError
 import os, psycopg2, time,datetime
 import pandas as pd
+import numpy as np
 import streamlit as st
 import streamlit_authenticator as stauth
 import streamlit.components.v1 as components
@@ -49,19 +50,23 @@ def pull_idemail_labeled():
         ids=['temp']
     return ids
 def pull_labeled_number():
-    cur = connect_db().cursor()
-    cur.execute('select * from email.labels')  
-
-    df = pd.DataFrame(cur.fetchall())
-    df.columns = [ x.name for x in cur.description ]
-    df = df[df['timeuse'].notnull()]
-
     tstr = "25 Jan 2024 1:50:28"
     tstr = time.strptime(tstr, "%d %b %Y %H:%M:%S")
-    df['datesubmit'] = df['timesubmit'].astype('float')
-    df_period = df[df['datesubmit']>time.mktime(tstr)]  
 
-    return df_period.shape[0]
+    cur = connect_db().cursor()
+    cur.execute('select timesubmit from email.labels')  
+    timesubmit = np.array([x[0] for x in cur.fetchall()], dtype=float)
+    timesubmit = timesubmit[timesubmit>time.mktime(tstr)]
+
+    # df = pd.DataFrame(cur.fetchall())
+    # df.columns = [ x.name for x in cur.description ]
+    # df = df[df['timeuse'].notnull()]
+
+   
+    # df['datesubmit'] = df['timesubmit'].astype('float')
+    # df_period = df[df['datesubmit']>time.mktime(tstr)]  
+    print ('1111111111111111111111111111111',timesubmit.shape[0])
+    return timesubmit.shape[0]
 def push_idemail_open(id_email=None,username=None):
     cur = connect_db().cursor()
     sql = f"""INSERT INTO email.openedids (timeopened, idemail, username) VALUES ('{str(time.time())}','{id_email}', '{username}')"""       
