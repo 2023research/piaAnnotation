@@ -361,7 +361,7 @@ if authenticator_status==False:
     st.error('username/password is incorrect')
 elif authenticator_status==None:
     st.warning("please enter your username and password")
-elif st.session_state.number_labeled>9888: # check how many labeled emails
+elif st.session_state.number_labeled>9888: #check how many labeled emails
     st.header(f'Congratulations! The annotation task has been completed.', divider='red')
 else:
     st.markdown(f"<h2 style='text-align: center; color: red;'>Welcome {username}!</h2>", unsafe_allow_html=True)
