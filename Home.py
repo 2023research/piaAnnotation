@@ -283,7 +283,7 @@ print ('-------------------------------------------new run----------------------
 ####### initialize global session state
 if "issue_list" not in st.session_state or 'id_email' not in st.session_state or 'is_maintenance' not in st.session_state:
     st.session_state.number_labeled = 0
-    st.session_state.id_email = 'other'
+    st.session_state.id_email = ''
     st.session_state.text_email = None
     st.session_state.issue_list = []
     st.session_state.deletes = []
