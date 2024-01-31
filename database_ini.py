@@ -131,7 +131,7 @@ if True:
     with open(f_name) as f:
         list_doc = yaml.safe_load(f)
     # print (list_doc['credentials']['usernames'])
-    pms = ['winkie','massimo','reina','alexchiu','kel','michaellee','henry','yolanda','brian','jason','isabella','martin','rain','stephen','jesse','jay','melvin']
+    pms = ['winkie','massimo','reina','alexchiu','kel','michaellee','henry','yolanda','brian','jason','isabella','martin','rain','stephen','jesse','jay','melvin','zenith','lyric','mark','sophie']
     random.seed(1)
     for name in pms:
         # name = 'PM'+str(num)
@@ -144,7 +144,7 @@ if True:
     with open(f_name, "w") as f:
         yaml.dump(list_doc, f)
     # print for zelin
-    pms_print = ['kevin','winkie','tony','massimo','reina','alexchiu','andy','kel','michaellee','henry','jeffrey','yolanda','brian','jason','leon','isabella','martin','rain','ray','stephen','jesse','jay','melvin']
+    pms_print = ['kevin','winkie','tony','massimo','reina','alexchiu','andy','kel','michaellee','henry','jeffrey','yolanda','brian','jason','leon','isabella','martin','rain','ray','stephen','jesse','jay','melvin','zenith','lyric','mark','sophie']
     with open(f_name) as f:
         list_doc = yaml.safe_load(f)
     users = list_doc['credentials']['usernames'].keys()
@@ -158,26 +158,31 @@ if True:
     for user in pms_print:
         print (user,':',dict_tmp[user])
     print (dict_tmp) 
+# kevin : 8963
+# winkie : 3201
+# tony : 8768
+# massimo : 2033
+# reina : 5179
+# alexchiu : 2931
+# andy : 2836
+# kel : 9117
+# michaellee : 8364
+# henry : 8737
+# jeffrey : 6323
+# yolanda : 7219
+# brian : 4439
+# jason : 2537
+# leon : 4936
+# isabella : 8993
+# martin : 1464
+# rain : 7386
+# ray : 3232
+# stephen : 8090
+# jesse : 1034
+# jay : 8297
+# melvin : 5363
+# zenith : 4748
+# lyric : 2674
+# mark : 6200
+# sophie : 1501
 ###########################################
-#  # st method#################################
-# start_time = time.time()
-# conn = st.connection("postgresql", type="sql")
-# # Perform query.
-# conn.session.execute(text(sql))
-# conn.session.execute('commit')
-# print("---1 %s cur seconds ---" % (time.time() - start_time))
-# start_time = time.time()
-
-# # pandas method #################################
-# start_time = time.time()
-# print (pd.read_sql('select issuestr from email.issues', con=sqlalchemy_engine()))
-# print("--- %s pd seconds ---" % (time.time() - start_time))
-
-# #psycopg2 method #################################
-# #db data to datafram####
-# start_time = time.time()
-# cur = connect_db().cursor()
-# cur.execute('select issuestr from email.issues')
-# df = pd.DataFrame(cur.fetchall())
-# df.columns = [ x.name for x in cur.description ]
-# print(df)
