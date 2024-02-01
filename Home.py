@@ -529,7 +529,12 @@ else:
                     if new_option in opt or new_option[:-1] in opt:
                         # st.session_state[key[0]] = new_option
                         # item = st.selectbox(label=label, options=opt, index=idx, placeholder=phld, disabled=disable, key=key[0]) 
-                        st.warning(f"Your new option '{new_option}' has been existed in the left selectbox.")
+                        st.warning(f"Your new keyword '{new_option}' has been existed in the left selectbox.")
+                    elif ';'in new_option or '|' in new_option:
+                        st.warning(f"Your new keyword '{new_option}' has reserved character ';' or '|'. Please avoid using them")
+                        item = ''.join(e for e in item if e != ';')
+                        item = ''.join(e for e in item if e != '|')
+                        print (item)
                     else:                        
                         st.session_state.newopts[label]=item
                 else:
