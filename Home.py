@@ -598,7 +598,7 @@ else:
         # if 'other' not in  opts_nonmain_sub[is_maintenance]:
         #     opts_nonmain_sub[is_maintenance].append('other')
         # nonmain_sub = select_issues("subtype",opts_nonmain_sub[is_maintenance], key=['key_nonmain_sub','key_nonmain_sub_new'])
-        nonmain_sub = 'other'
+        nonmain_sub = 'not given'
         # ###################################################################
         # #### nonmain_subsub ####
         # if is_maintenance not in opts_nonmain_subsub.keys():
@@ -606,7 +606,7 @@ else:
         # if 'other' not in  opts_nonmain_subsub[is_maintenance]:
         #     opts_nonmain_subsub[is_maintenance].append('other')
         # nonmain_subsub = select_issues("sub-subtype",opts_nonmain_subsub[is_maintenance], key=['key_nonmain_subsub','key_nonmain_subsub_new'])
-        nonmain_subsub = 'other'
+        nonmain_subsub = 'not given'
         # ###################################################################
         # issue_str_list = [is_maintenance,nonmain,nonmain_sub,nonmain_subsub]
         issue_str_list = [is_maintenance,nonmain]
