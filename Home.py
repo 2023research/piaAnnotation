@@ -92,7 +92,7 @@ def read_email(sample=False,username='other'):
     
     @st.cache_data
     def get_email_data():
-        df = pd.read_csv('./data/test_pos_wlTFLR_key_20ksamples4annotation.csv',sep=',')
+        df = pd.read_csv('./data/annotation_6ksamples_7ktraining.csv',sep=',')
         idsallset = set(df["ID"].unique())
         return df, idsallset
     ####
