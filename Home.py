@@ -544,7 +544,7 @@ else:
     #### related is_maintenance ###############################################################
     print ('+++++++++++++',st.session_state.is_maintenance)
     
-    opts_related = ['strata','maintenance','account','leasing','inspection','portfolia management','rent review','complaints','NCAT','property sales']
+    opts_related = ['strata','maintenance','account','leasing','inspection','portfolio management','rent review','complaints','NCAT','property sales']
     is_maintenance = select_issues("what is the email related to?",opts_related,key=['is_maintenance','is_maintenance_new'])  
     disable = False
     if is_maintenance=='maintenance':
