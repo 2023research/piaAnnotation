@@ -14,18 +14,18 @@
 #
 # http://13.211.130.199:8501/ 
 # python -m streamlit run Home.py
-from urllib.error import URLError
-import os, psycopg2, time,datetime
+# from urllib.error import URLError
+import psycopg2, time #,os, datetime
 import pandas as pd
 import numpy as np
 import streamlit as st
 import streamlit_authenticator as stauth
-import streamlit.components.v1 as components
+# import streamlit.components.v1 as components
 from streamlit_modal import Modal
-from streamlit.logger import get_logger
+# from streamlit.logger import get_logger
 
-from sqlalchemy import create_engine
-from sqlalchemy.sql import text
+# from sqlalchemy import create_engine
+# from sqlalchemy.sql import text
 
 # from utils import *
 # from maintenance import *
@@ -44,22 +44,43 @@ _shown_default_value_warning = True
 ##### load email #####################################################################################
 def pull_idemail_labeled():
     cur = connect_db().cursor()
-    cur.execute('select idemail from email.labels')    
-    ids = [x[0] for x in cur.fetchall()]
+    cur.execute('select idemail, timesubmit, username from email.labels') 
+    df = pd.DataFrame(cur.fetchall())
+    df.columns = [ x.name for x in cur.description ]
+    # print ('#################',df)   
+
+    # cur.execute('select idemail, timesubmit, username from email.labels') 
+    ids = df['idemail'].tolist()# [x[0] for x in cur.fetchall()]
+    # print ('#################',ids) 
     if len(ids)==0:
         ids=['temp']
-    return ids
+
+    ## date filter ######################################
+    tstr = "25 Jan 2024 1:50:28"
+    tstr = time.strptime(tstr, "%d %b %Y %H:%M:%S")
+    timesubmit = df['timesubmit'].astype('float').values
+    timesubmit_boolen = timesubmit>time.mktime(tstr)
+    df_filter = df[timesubmit_boolen]
+    # print ('#############',df.shape, df_filter.shape)
+    
+    return {'ids':ids,'labeled_number':df_filter.shape[0],'pm_labels':df_filter['username'].values}
 def pull_labeled_number():
     tstr = "25 Jan 2024 1:50:28"
     tstr = time.strptime(tstr, "%d %b %Y %H:%M:%S")
 
     cur = connect_db().cursor()
-    cur.execute('select timesubmit from email.labels')  
-    timesubmit = np.array([x[0] for x in cur.fetchall()], dtype=float)
-    timesubmit = timesubmit[timesubmit>time.mktime(tstr)]
+    cur.execute('select timesubmit, username from email.labels')  
 
+    timesubmit = np.array([x[0] for x in cur.fetchall()], dtype=float)
+    print ('#################',timesubmit.shape)
+    timesubmit_boolen = timesubmit>time.mktime(tstr)
+    timesubmit = timesubmit[timesubmit_boolen]
+    print ('#################',timesubmit.shape)
+
+    # cur.execute('select timesubmit, username from email.labels')
     # df = pd.DataFrame(cur.fetchall())
     # df.columns = [ x.name for x in cur.description ]
+    # print ('#################',df)
     # df = df[df['timeuse'].notnull()]
 
    
@@ -96,39 +117,31 @@ def read_email(sample=False,username='other'):
         idsallset = set(df["ID"].unique())
         return df, idsallset
     ####
-    st.session_state.number_labeled = pull_labeled_number()
-    print ('st.session_state.number_labeled',st.session_state.number_labeled)
-
     start_time = time.time()
-    idslabeled = pull_idemail_labeled()
-    # print ('idslabeled',idslabeled)
+    pull_labeled = pull_idemail_labeled()
+    st.session_state.number_labeled = pull_labeled['labeled_number']
+    print ('st.session_state.number_labeled',st.session_state.number_labeled)
+    number_labeled_user = pull_labeled['pm_labels']
+    number_labeled_user = sum(number_labeled_user==username)
+    # print ('!!!!!!!!!!!!!!!!!',number_labeled_user)
+    # idslabeled = pull_idemail_labeled()
+    idslabeled = pull_labeled['ids']    
+    # print ('idslabeled',len(idslabeled))
     idsopened = pull_idemail_open()
     # print('idsopened',idsopened)
     ids_used = set(idslabeled+idsopened)  
-    # print ('ids_used',ids_used)
+    # print ('ids_used',len(ids_used))
+    
     print("--- %s pd seconds ---" % (time.time() - start_time))
 
-    
-    # if username=='ray':
-    #     df, idsallset = get_email_data_ray()
-    # elif username=='tony':
-    #     df, idsallset = get_email_data_tony()
-    # elif username=='leon':   
-    #     df, idsallset = get_email_data_leon()
-    # elif username=='kevin':
-    #     df, idsallset = get_email_data_kevin()
-    # elif username=='andy':
-    #     df, idsallset = get_email_data_andy()
-    # elif username=='jeffrey':
-    #     df, idsallset = get_email_data_jeffrey()
-    # elif username=='other':
     df, idsallset = get_email_data()
-    print ('@@@@@@@@@@@@@@@@@@@@@ total un-annotated emails:',df.shape,df.columns)
+    # print ('@@@@@@@@@@@@@@@@@@@@@ total un-annotated emails:',df.shape,df.columns)
     # df = df[['Body','ID']]
     df['sort']=df.index
     idx_unlabled = idsallset.difference(ids_used)
     df_email = df.set_index('ID',drop=True)
     df_out = df_email.loc[list(idx_unlabled)]
+    # print ('@@@@@@@@@@@@@@@@@filtered',df_out.shape)
     # df_out.sort_values(by='sort',inplace=True)
     df_onerow = df_out.sample(1)
     # df_onerow = df_out.iloc[[0]]
@@ -143,7 +156,7 @@ def read_email(sample=False,username='other'):
     # return df_onerow['Body'].values[0],df_onerow.index[0]            
     text_email = f" * **From:** {df_onerow['From name'].values[0]} ({df_onerow['From address'].values[0]})\n* **To:** {df_onerow['To name'].values[0]} ({df_onerow['To address'].values[0]}) \n* **Subject:** {df_onerow['Subject'].values[0]}\n* **Content:** \n\n{df_onerow['Body'].values[0]}"
     # print ('@@@@@@@@@@@@@@@@@@@@@',text_email) 
-    return text_email,df_onerow.index[0]            
+    return text_email,df_onerow.index[0], number_labeled_user            
     
 
 #### slectbox options #####################################
@@ -283,6 +296,7 @@ print ('-------------------------------------------new run----------------------
 ####### initialize global session state
 if "issue_list" not in st.session_state or 'id_email' not in st.session_state or 'is_maintenance' not in st.session_state:
     st.session_state.number_labeled = 0
+    st.session_state.number_labeled_user = -1
     st.session_state.id_email = ''
     st.session_state.text_email = None
     st.session_state.issue_list = []
@@ -322,10 +336,10 @@ if "issue_list" not in st.session_state or 'id_email' not in st.session_state or
     st.session_state.key_post=''
 ####### database ############ nonmain,nonmain_sub,nonmain_subsub
 # print ('======================',st.session_state.is_maintenance)
-@st.cache_resource
-def sqlalchemy_engine():
-    engine = create_engine('postgresql://postgres:UTS-DSI2020@piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com/pia')
-    return engine
+# @st.cache_resource
+# def sqlalchemy_engine():
+#     engine = create_engine('postgresql://postgres:UTS-DSI2020@piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com/pia')
+#     return engine
 @st.cache_resource
 def connect_db():
     conn = psycopg2.connect("dbname=pia host=piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com user=postgres password=UTS-DSI2020")
@@ -418,15 +432,16 @@ else:
         # if username in ['ray','tony','leon','kevin','andy','jeffrey']:
         #     st.session_state.text_email, st.session_state.id_email = read_email(username=username)
         # else:
-        st.session_state.text_email, st.session_state.id_email = read_email()    
+        st.session_state.text_email, st.session_state.id_email, st.session_state.number_labeled_user = read_email(username=username)    
         push_idemail_open(id_email=st.session_state.id_email,username=username)
 
     text_email,id_email = st.session_state.text_email, st.session_state.id_email
     print (id_email)    
-    st.header(f'Text to analyze. The email id is: {id_email}', divider='red')
+    st.subheader(f'You have annotated: {st.session_state.number_labeled_user}')
+    st.subheader(f'Email id: {id_email}', divider='red')
     st.markdown(text_email)
     st.header(body='',divider='red' )
-    st.header('End')
+    st.subheader('End')
 
 ######## property address #############################################################################
     # # st.sidebar.subheader('',divider='red')
