@@ -39,7 +39,21 @@ _shown_default_value_warning = True
 ##########################################################################################################
 ######################################## Functions #######################################################
 ##########################################################################################################
-
+####### database ############ nonmain,nonmain_sub,nonmain_subsub
+# print ('======================',st.session_state.is_maintenance)
+# @st.cache_resource
+# def sqlalchemy_engine():
+#     engine = create_engine('postgresql://postgres:UTS-DSI2020@piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com/pia')
+#     return engine
+@st.cache_resource
+def connect_db():
+    conn = psycopg2.connect("dbname=pia host=piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com user=postgres password=UTS-DSI2020")
+    return conn
+###### style setting ##########
+st.markdown( """<style>section[data-testid="stSidebar"] {
+            width: 800px !important; # Set the width to your desired value}</style> """, unsafe_allow_html=True, )
+st.markdown("""<style>div.stButton {text-align:center; color: blue;}</style>""", unsafe_allow_html=True)
+########################################################################################################
 ###############################################################################################   
 ##### load email #####################################################################################
 def pull_idemail_labeled():
@@ -295,7 +309,8 @@ print ('-------------------------------------------new run----------------------
 # path_results = './results'
 ####### initialize global session state
 if "issue_list" not in st.session_state or 'id_email' not in st.session_state or 'is_maintenance' not in st.session_state:
-    st.session_state.number_labeled = 0
+    # st.session_state.number_labeled = 0
+    _, _, _ = read_email()
     st.session_state.number_labeled_user = -1
     st.session_state.id_email = ''
     st.session_state.text_email = None
@@ -334,21 +349,7 @@ if "issue_list" not in st.session_state or 'id_email' not in st.session_state or
     st.session_state.key_suburb=''
     st.session_state.key_state=''
     st.session_state.key_post=''
-####### database ############ nonmain,nonmain_sub,nonmain_subsub
-# print ('======================',st.session_state.is_maintenance)
-# @st.cache_resource
-# def sqlalchemy_engine():
-#     engine = create_engine('postgresql://postgres:UTS-DSI2020@piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com/pia')
-#     return engine
-@st.cache_resource
-def connect_db():
-    conn = psycopg2.connect("dbname=pia host=piadb.c4j0rw3vec6q.ap-southeast-2.rds.amazonaws.com user=postgres password=UTS-DSI2020")
-    return conn
-###### style setting ##########
-st.markdown( """<style>section[data-testid="stSidebar"] {
-            width: 800px !important; # Set the width to your desired value}</style> """, unsafe_allow_html=True, )
-st.markdown("""<style>div.stButton {text-align:center; color: blue;}</style>""", unsafe_allow_html=True)
-########################################################################################################
+
 
 ##### login #######################################################################################
 # login authorization ###########
@@ -371,12 +372,15 @@ authenticator = stauth.Authenticate(
     config['preauthorized']
 )
 showingname, authenticator_status, username = authenticator.login('Login','main')
+print ('-------------------------------aaa',st.session_state.number_labeled)
 if authenticator_status==False:
     st.error('username/password is incorrect')
 elif authenticator_status==None:
-    st.warning("please enter your username and password")
-elif st.session_state.number_labeled>9888: #check how many labeled emails
-    st.header(f'Congratulations! The annotation task has been completed.', divider='red')
+    st.warning("please enter your username and password")    
+elif st.session_state.number_labeled>888: #check how many labeled emails
+    # st.header(f'Congratulations! The annotation task has been completed.', divider='red')
+    print ('-------------------------------aaa')
+    st.header(f'Coming soon! The annotation tool is in maintenance.', divider='red')
 else:
     st.markdown(f"<h2 style='text-align: center; color: red;'>Welcome {username}!</h2>", unsafe_allow_html=True)
     authenticator.logout('Logout')
