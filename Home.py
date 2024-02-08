@@ -437,7 +437,7 @@ else:
 
     text_email,id_email = st.session_state.text_email, st.session_state.id_email
     print (id_email)    
-    st.subheader(f'You have annotated: {st.session_state.number_labeled_user}')
+    # st.subheader(f'You have annotated: {st.session_state.number_labeled_user}')
     st.subheader(f'Email id: {id_email}', divider='red')
     st.markdown(text_email)
     st.header(body='',divider='red' )
