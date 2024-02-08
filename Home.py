@@ -379,7 +379,7 @@ elif authenticator_status==None:
     st.warning("please enter your username and password")    
 elif st.session_state.number_labeled>888: #check how many labeled emails
     # st.header(f'Congratulations! The annotation task has been completed.', divider='red')
-    print ('-------------------------------aaa')
+    print ('------------------------ -------aaa',username)
     st.header(f'Coming soon! The annotation tool is in maintenance.', divider='red')
 else:
     st.markdown(f"<h2 style='text-align: center; color: red;'>Welcome {username}!</h2>", unsafe_allow_html=True)
